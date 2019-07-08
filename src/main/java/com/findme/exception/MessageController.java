@@ -1,4 +1,4 @@
-package com.findme.controller;
+package com.findme.exception;
 
 import com.findme.models.Message;
 import com.findme.service.MessageService;
