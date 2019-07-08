@@ -9,14 +9,6 @@ import javax.transaction.Transactional;
 @Repository
 public class MessageDaoImpl extends GeneralDao<Message> implements MessageDao {
 
-
-    @Override
-    public Message delete(Long id) {
-        Message post = entityManager.find(Message.class, id);
-        entityManager.remove(post);
-        return post;
-    }
-
     @Override
     public Message findById(Long id) {
         return null;

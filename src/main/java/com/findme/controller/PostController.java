@@ -1,4 +1,4 @@
-package com.findme.exception;
+package com.findme.controller;
 
 import com.findme.models.Post;
 import com.findme.service.PostService;
@@ -48,7 +48,7 @@ public class PostController {
     public @ResponseBody
     String delete(@RequestBody Post post) {
         try {
-            postService.delete(post.getId());
+            postService.delete(post);
         } catch (Exception e) {
             e.getCause();
             e.printStackTrace();

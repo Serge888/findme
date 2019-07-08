@@ -1,4 +1,4 @@
-package com.findme.exception;
+package com.findme.controller;
 
 import com.findme.models.Message;
 import com.findme.service.MessageService;
@@ -48,7 +48,7 @@ public class MessageController {
     public @ResponseBody
     String delete(@RequestBody Message message) {
         try {
-            messageService.delete(message.getId());
+            messageService.delete(message);
         } catch (Exception e) {
             e.getCause();
             e.printStackTrace();

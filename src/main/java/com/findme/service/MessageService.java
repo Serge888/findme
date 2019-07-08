@@ -8,7 +8,7 @@ public interface MessageService {
 
     Message save(Message message);
     Message update(Message message);
-    Message delete(Long id);
+    Message delete(Message message);
     Message findById(Long id);
 
 }

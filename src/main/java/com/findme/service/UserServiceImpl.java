@@ -12,9 +12,12 @@ import java.util.Date;
 @Transactional
 @Service
 public class UserServiceImpl implements UserService {
+    private final UserDao userDao;
 
     @Autowired
-    private UserDao userDao;
+    public UserServiceImpl(UserDao userDao) {
+        this.userDao = userDao;
+    }
 
     @Override
     public User save(User user) {
@@ -28,8 +31,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public User delete(Long id) {
-        return userDao.delete(id);
+    public User delete(User user) {
+        return userDao.delete(user);
     }
 
     @Override

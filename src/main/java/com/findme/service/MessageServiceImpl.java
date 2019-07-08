@@ -12,9 +12,12 @@ import java.util.Date;
 @Transactional
 @Service
 public class MessageServiceImpl implements MessageService {
+    private final MessageDao messageDao;
 
     @Autowired
-    private MessageDao messageDao;
+    public MessageServiceImpl(MessageDao messageDao) {
+        this.messageDao = messageDao;
+    }
 
     @Override
     public Message save(Message message) {
@@ -28,8 +31,8 @@ public class MessageServiceImpl implements MessageService {
     }
 
     @Override
-    public Message delete(Long id) {
-        return messageDao.delete(id);
+    public Message delete(Message message) {
+        return messageDao.delete(message);
     }
 
     @Override

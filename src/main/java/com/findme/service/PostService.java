@@ -8,6 +8,6 @@ public interface PostService {
 
     Post save(Post post);
     Post update(Post post);
-    Post delete(Long id);
+    Post delete(Post post);
     Post findById(Long id);
 }

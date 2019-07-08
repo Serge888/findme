@@ -22,4 +22,9 @@ public class GeneralDao<Z> {
         entityManager.merge(z);
         return z;
     }
+
+    public Z delete(Z z) {
+        entityManager.remove(z);
+        return z;
+    }
 }

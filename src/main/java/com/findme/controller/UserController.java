@@ -74,7 +74,7 @@ public class UserController {
     public @ResponseBody
     String delete(@RequestBody User user) {
         try {
-            userService.delete(user.getId());
+            userService.delete(user);
         } catch (Exception e) {
             e.getCause();
             e.printStackTrace();

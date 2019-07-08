@@ -12,9 +12,12 @@ import java.util.Date;
 @Transactional
 @Service
 public class PostServiceImpl implements PostService {
+    private final PostDao postDao;
 
     @Autowired
-    private PostDao postDao;
+    public PostServiceImpl(PostDao postDao) {
+        this.postDao = postDao;
+    }
 
     @Override
     public Post save(Post post) {
@@ -28,8 +31,8 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Post delete(Long id) {
-        return postDao.delete(id);
+    public Post delete(Post post) {
+        return postDao.delete(post);
     }
 
     @Override
