@@ -21,6 +21,7 @@ public class UserController {
     public String home(Model model, @PathVariable Long userId) {
         User user = userService.findById(userId);
         if (user == null) {
+            System.out.println("User id " + userId + " was not found");
             throw new ResourceNotFoundException();
         }
         model.addAttribute("user", user);
@@ -47,20 +48,14 @@ public class UserController {
     String update(@RequestBody User newUser) {
         User user = new User();
         try {
-            user = userService.findById(newUser.getId());
-
-            user.setFirstName(newUser.getFirstName());
-            user.setLastName(newUser.getLastName());
-            user.setAge(newUser.getAge());
-            user.setCity(newUser.getCity());
-            user.setCountry(newUser.getCountry());
-            user.setDateLastActive(newUser.getDateLastActive());
-            user.setPhone(newUser.getPhone());
-            user.setRelationShipStatus(newUser.getRelationShipStatus());
-            user.setSchool(newUser.getSchool());
-            user.setUniversity(newUser.getUniversity());
-            user.setReligion(newUser.getReligion());
-
+            Long id =  newUser.getId();
+            user = userService.findById(id);
+            if (user == null) {
+                System.out.println("User id " + id + " was not found");
+                throw new ResourceNotFoundException();
+            }
+            newUser.setDateRegistered(user.getDateRegistered());
+            user = newUser;
             userService.update(user);
         } catch (Exception e) {
             e.getMessage();
@@ -90,6 +85,10 @@ public class UserController {
         User user = new User();
         try {
             user = userService.findById(userId);
+            if (user == null) {
+                System.out.println("User id " + userId + " was not found");
+                throw new ResourceNotFoundException();
+            }
         } catch (Exception e) {
             e.getCause();
             e.printStackTrace();

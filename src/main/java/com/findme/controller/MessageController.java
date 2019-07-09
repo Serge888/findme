@@ -1,5 +1,6 @@
 package com.findme.controller;
 
+import com.findme.exception.ResourceNotFoundException;
 import com.findme.models.Message;
 import com.findme.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,8 +33,13 @@ public class MessageController {
     public @ResponseBody
     String update(@RequestBody Message newMessage) {
         Message message = new Message();
+        Long id = newMessage.getId();
         try {
-            message = messageService.findById(newMessage.getId());
+            message = messageService.findById(id);
+            if (message == null) {
+                System.out.println("Post id " + id + " was not found");
+                throw new ResourceNotFoundException();
+            }
             message.setText(newMessage.getText());
             messageService.update(message);
         } catch (Exception e) {
@@ -64,6 +70,10 @@ public class MessageController {
         Message message = new Message();
         try {
             message = messageService.findById(messageId);
+            if (message == null) {
+                System.out.println("Post id " + messageId + " was not found");
+                throw new ResourceNotFoundException();
+            }
         } catch (Exception e) {
             e.getCause();
             e.printStackTrace();

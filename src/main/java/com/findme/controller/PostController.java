@@ -1,5 +1,6 @@
 package com.findme.controller;
 
+import com.findme.exception.ResourceNotFoundException;
 import com.findme.models.Post;
 import com.findme.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +35,9 @@ public class PostController {
         Post post = new Post();
         try {
             post = postService.findById(newPost.getId());
+            if (post == null) {
+                throw new ResourceNotFoundException();
+            }
             post.setMessage(newPost.getMessage());
             postService.update(post);
         } catch (Exception e) {
@@ -64,6 +68,10 @@ public class PostController {
         Post post = new Post();
         try {
             post = postService.findById(postId);
+            if (post == null) {
+                System.out.println("Post id " + postId + " was not found");
+                throw new ResourceNotFoundException();
+            }
         } catch (Exception e) {
             e.getCause();
             e.printStackTrace();

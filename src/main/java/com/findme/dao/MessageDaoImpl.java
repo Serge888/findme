@@ -11,6 +11,6 @@ public class MessageDaoImpl extends GeneralDao<Message> implements MessageDao {
 
     @Override
     public Message findById(Long id) {
-        return null;
+        return entityManager.find(Message.class, id);
     }
 }
