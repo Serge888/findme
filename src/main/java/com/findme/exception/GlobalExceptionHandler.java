@@ -17,7 +17,7 @@ public class GlobalExceptionHandler {
         logger.error("BadRequestException handler executed.");
     }
 
-    @ResponseStatus(value = HttpStatus.BAD_GATEWAY, reason = "Something was wrong with server")
+    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR, reason = "Something was wrong with server")
     @ExceptionHandler(InternalServerException.class)
     public void handlerInternalServerException() {
         logger.error("InternalServerException handler executed.");
