@@ -1,6 +1,7 @@
 package com.findme.controller;
 
-import com.findme.exception.ResourceNotFoundException;
+import com.findme.exception.InternalServerException;
+import com.findme.exception.NotFoundException;
 import com.findme.models.Message;
 import com.findme.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,67 +19,34 @@ public class MessageController {
 
     @RequestMapping(method = RequestMethod.POST, value = "/save-message", produces = "text/plain")
     public @ResponseBody
-    String save(@RequestBody Message message) {
-        try {
-            messageService.save(message);
-        } catch (Exception e) {
-            e.getMessage();
-            return "Message id " + message.getId() + " was not saved";
-        }
+    String save(@RequestBody Message message) throws InternalServerException {
+        messageService.save(message);
         return "Message id " + message.getId() + " was saved";
     }
 
 
     @RequestMapping(method = RequestMethod.PUT, value = "/update-message", produces = "text/plain")
     public @ResponseBody
-    String update(@RequestBody Message newMessage) {
-        Message message = new Message();
+    String update(@RequestBody Message newMessage) throws NotFoundException, InternalServerException {
         Long id = newMessage.getId();
-        try {
-            message = messageService.findById(id);
-            if (message == null) {
-                System.out.println("Post id " + id + " was not found");
-                throw new ResourceNotFoundException();
-            }
-            message.setText(newMessage.getText());
-            messageService.update(message);
-        } catch (Exception e) {
-            e.getMessage();
-            return "Message id " + message.getId() + " was not updated";
-        }
+        Message message = messageService.findById(id);
+        message.setText(newMessage.getText());
+        messageService.update(message);
         return "Message id " + message.getId() + " was updated " + message;
     }
 
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/delete-message", produces = "text/plain")
     public @ResponseBody
-    String delete(@RequestBody Message message) {
-        try {
-            messageService.delete(message);
-        } catch (Exception e) {
-            e.getCause();
-            e.printStackTrace();
-            return "Message id " + message.getId() + " was not deleted";
-
-        }
+    String delete(@RequestBody Message message) throws InternalServerException {
+        messageService.delete(message);
         return "Message id " + message.getId() + " was deleted " + message;
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/findById-message/{messageId}", produces = "text/plain")
     public @ResponseBody
-    String findById(@PathVariable Long messageId) {
-        Message message = new Message();
-        try {
-            message = messageService.findById(messageId);
-            if (message == null) {
-                System.out.println("Post id " + messageId + " was not found");
-                throw new ResourceNotFoundException();
-            }
-        } catch (Exception e) {
-            e.getCause();
-            e.printStackTrace();
-            return "Message " + message.getId() +" was not found.";
-        }
+    String findById(@PathVariable Long messageId) throws NotFoundException, InternalServerException {
+        Message message = messageService.findById(messageId);
         return "Message " + message.getId() +" was found: " + message;
     }
 }

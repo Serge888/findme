@@ -1,6 +1,8 @@
 package com.findme.service;
 
 
+import com.findme.exception.InternalServerException;
+import com.findme.exception.NotFoundException;
 import com.findme.models.Post;
 import com.findme.dao.PostDao;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,23 +22,23 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public Post save(Post post) {
+    public Post save(Post post) throws InternalServerException {
         return postDao.save(post);
     }
 
     @Override
-    public Post update(Post post) {
+    public Post update(Post post) throws InternalServerException {
         post.setDatePosted(new Date());
         return postDao.update(post);
     }
 
     @Override
-    public Post delete(Post post) {
+    public Post delete(Post post) throws InternalServerException {
         return postDao.delete(post);
     }
 
     @Override
-    public Post findById(Long id) {
+    public Post findById(Long id) throws NotFoundException, InternalServerException {
         return postDao.findById(id);
     }
 }

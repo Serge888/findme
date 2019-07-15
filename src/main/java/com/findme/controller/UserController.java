@@ -1,6 +1,8 @@
 package com.findme.controller;
 
-import com.findme.exception.ResourceNotFoundException;
+import com.findme.exception.BadRequestException;
+import com.findme.exception.InternalServerException;
+import com.findme.exception.NotFoundException;
 import com.findme.models.User;
 import com.findme.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,12 +20,8 @@ public class UserController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/user/{userId}")
-    public String home(Model model, @PathVariable Long userId) {
+    public String home(Model model, @PathVariable Long userId) throws InternalServerException, NotFoundException {
         User user = userService.findById(userId);
-        if (user == null) {
-            System.out.println("User id " + userId + " was not found");
-            throw new ResourceNotFoundException();
-        }
         model.addAttribute("user", user);
         return "profile";
     }
@@ -32,68 +30,32 @@ public class UserController {
 
     @RequestMapping(method = RequestMethod.POST, value = "/save-user", produces = "text/plain")
     public @ResponseBody
-    String save(@RequestBody User user) {
-        try {
-            userService.save(user);
-        } catch (Exception e) {
-            e.getMessage();
-            return "User id " + user.getId() + " was not saved";
-        }
+    String save(@RequestBody User user) throws InternalServerException {
+        userService.save(user);
         return "User id " + user.getId() + " was saved";
     }
 
 
     @RequestMapping(method = RequestMethod.PUT, value = "/update-user", produces = "text/plain")
     public @ResponseBody
-    String update(@RequestBody User newUser) {
-        User user = new User();
-        try {
-            Long id =  newUser.getId();
-            user = userService.findById(id);
-            if (user == null) {
-                System.out.println("User id " + id + " was not found");
-                throw new ResourceNotFoundException();
-            }
-            newUser.setDateRegistered(user.getDateRegistered());
-            user = newUser;
-            userService.update(user);
-        } catch (Exception e) {
-            e.getMessage();
-            return "User id " + user.getId() + " was not updated";
-        }
+    String update(@RequestBody User newUser) throws InternalServerException, NotFoundException {
+        Long id =  newUser.getId();
+        User user = userService.findById(id);
         return "User id " + user.getId() + " was updated " + user;
     }
 
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/delete-user", produces = "text/plain")
     public @ResponseBody
-    String delete(@RequestBody User user) {
-        try {
-            userService.delete(user);
-        } catch (Exception e) {
-            e.getCause();
-            e.printStackTrace();
-            return "User id " + user.getId() + " was not deleted";
-
-        }
+    String delete(@RequestBody User user) throws InternalServerException {
+        userService.delete(user);
         return "User id " + user.getId() + " was deleted " + user;
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/findById-user/{userId}", produces = "text/plain")
     public @ResponseBody
-    String findById(@PathVariable Long userId) {
-        User user = new User();
-        try {
-            user = userService.findById(userId);
-            if (user == null) {
-                System.out.println("User id " + userId + " was not found");
-                throw new ResourceNotFoundException();
-            }
-        } catch (Exception e) {
-            e.getCause();
-            e.printStackTrace();
-            return "User " + user.getId() +" was not found.";
-        }
+    String findById(@PathVariable Long userId) throws InternalServerException, NotFoundException {
+        User user = userService.findById(userId);
         return "User " + user.getId() +" was found: " + user;
     }
 }
