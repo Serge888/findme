@@ -1,13 +1,8 @@
 package com.findme.models;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import org.hibernate.annotations.LazyToOne;
-import org.hibernate.annotations.LazyToOneOption;
 
 import javax.persistence.*;
-import javax.transaction.Transactional;
-import javax.xml.bind.annotation.XmlTransient;
 import java.util.Date;
 
 @Entity
