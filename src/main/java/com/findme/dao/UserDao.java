@@ -9,5 +9,5 @@ public interface UserDao {
     User save(User user) throws InternalServerException;
     User update(User user) throws InternalServerException;
     User delete(User user) throws InternalServerException;
-    User findById(Long id) throws InternalServerException, NotFoundException;
+    User findById(Long id) throws NotFoundException, InternalServerException;
 }

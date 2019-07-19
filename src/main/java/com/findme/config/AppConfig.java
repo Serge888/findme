@@ -78,7 +78,7 @@ public class AppConfig implements WebMvcConfigurer {
         dataSource.setDriverClassName("org.postgresql.Driver");
         dataSource.setUrl("jdbc:postgresql://localhost:5432/findme");
         dataSource.setUsername("postgres");
-        dataSource.setPassword("postgres123");
+        dataSource.setPassword("postgres12322");
         return dataSource;
     }
 
@@ -100,6 +100,7 @@ public class AppConfig implements WebMvcConfigurer {
         properties.setProperty("hibernate.hbm2ddl.auto", "update");
         properties.setProperty("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
         properties.setProperty("hibernate.show_sql", "true");
+        properties.setProperty("hibernate.enable_lazy_load_no_trans", "true");
         return properties;
     }
 }

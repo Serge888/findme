@@ -6,37 +6,52 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.servlet.ModelAndView;
 
 @ControllerAdvice
 public class GlobalExceptionHandler {
     private static final Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST, reason = "Something was wrong with your request")
+
+    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(BadRequestException.class)
-    public void handlerBadRequestException() {
+    public ModelAndView handlerBadRequestException(Exception e) {
         logger.error("BadRequestException handler executed.");
+        ModelAndView modelAndView = new ModelAndView("400");
+        modelAndView.addObject("exception", e.getMessage());
+        return modelAndView;
     }
 
-    @ResponseStatus(value = HttpStatus.INTERNAL_SERVER_ERROR, reason = "Something was wrong with server")
+
     @ExceptionHandler(InternalServerException.class)
-    public void handlerInternalServerException() {
+    @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+    public ModelAndView handlerInternalServerException(Exception e) {
         logger.error("InternalServerException handler executed.");
+        ModelAndView modelAndView = new ModelAndView("500");
+        modelAndView.addObject("exception", e.getMessage());
+        return modelAndView;
     }
 
 
-    @ResponseStatus(value = HttpStatus.FORBIDDEN, reason = "Access is forbidden.")
-    @ExceptionHandler(AccessForbiddenException.class)
-    public void handlerAccessForbiddenException() {
-        logger.error("AccessForbiddenException handler executed.");
-    }
-
-
-    @ResponseStatus(value = HttpStatus.NOT_FOUND, reason = "The information that you have been looking for was not found.")
     @ExceptionHandler(NotFoundException.class)
-    public void handlerNotFoundException() {
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ModelAndView handlerNotFoundException(Exception e) {
         logger.error("NotFoundException handler executed.");
+        ModelAndView modelAndView = new ModelAndView("404");
+        modelAndView.addObject("exception", e.getMessage());
+        return modelAndView;
     }
 
+
+
+    @ExceptionHandler(AccessForbiddenException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ModelAndView handlerAccessForbiddenException(Exception e) {
+        logger.error("AccessForbiddenException handler executed.");
+        ModelAndView modelAndView = new ModelAndView("403");
+        modelAndView.addObject("exception", e.getMessage());
+        return modelAndView;
+    }
 
 
 }

@@ -8,10 +8,8 @@ import com.findme.dao.MessageDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.Date;
 
-@Transactional
 @Service
 public class MessageServiceImpl implements MessageService {
     private final MessageDao messageDao;

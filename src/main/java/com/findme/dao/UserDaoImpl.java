@@ -12,16 +12,16 @@ import javax.transaction.Transactional;
 public class UserDaoImpl extends GeneralDao<User> implements UserDao {
 
     @Override
-    public User findById(Long id) throws InternalServerException, NotFoundException {
-        User u;
+    public User findById(Long id) throws NotFoundException, InternalServerException {
+        User user;
         try {
-            u =  entityManager.find(User.class, id);
+            user =  entityManager.find(User.class, id);
         } catch (Exception e) {
             throw new InternalServerException("Something went wrong with findById userId = " + id);
         }
-        if (u == null) {
+        if (user == null) {
             throw new NotFoundException("User id " + id + " was not found");
         }
-        return u;
+        return user;
     }
 }

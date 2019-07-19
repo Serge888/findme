@@ -8,10 +8,8 @@ import com.findme.dao.PostDao;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import javax.transaction.Transactional;
 import java.util.Date;
 
-@Transactional
 @Service
 public class PostServiceImpl implements PostService {
     private final PostDao postDao;

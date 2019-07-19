@@ -1,6 +1,7 @@
 package com.findme.exception;
 
-public class InternalServerException extends Exception {
+public class InternalServerException extends RuntimeException {
+
     public InternalServerException(String message) {
         super(message);
     }
