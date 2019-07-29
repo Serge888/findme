@@ -1,9 +1,13 @@
 package com.findme.controller;
 
 import com.findme.Util.UtilString;
+import com.findme.exception.BadRequestException;
+import com.findme.exception.NotFoundException;
 import com.findme.models.User;
 import com.findme.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -16,6 +20,25 @@ public class UserController {
     public UserController(UserService userService) {
         this.userService = userService;
     }
+
+
+   @RequestMapping(method = RequestMethod.POST, value = "/user-registration")
+   public ResponseEntity registerUser(@ModelAttribute User user) {
+        try {
+            userService.save(user);
+        } catch (Exception e) {
+            return new ResponseEntity<>("User " + user.getFirstName() + " was not registered. " +
+                    e.getMessage(), HttpStatus.BAD_REQUEST);
+        }
+        return new ResponseEntity<>("User " + user.getFirstName() + " was registered.", HttpStatus.OK);
+   }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/registration")
+    public String home() {
+        return "registration";
+    }
+
+
 
     @RequestMapping(method = RequestMethod.GET, path = "/user/{userId}")
     public String home(Model model, @PathVariable String  userId) {
@@ -40,6 +63,9 @@ public class UserController {
     String update(@RequestBody User newUser) {
         Long id =  newUser.getId();
         User user = userService.findById(id);
+        if (user == null) {
+            throw new NotFoundException("User id " + id + " was not found");
+        }
         return "User id " + user.getId() + " was updated " + user;
     }
 
@@ -55,8 +81,38 @@ public class UserController {
     public @ResponseBody
     String findById(@PathVariable String userId) {
         User user = userService.findById(UtilString.stringToLong(userId));
+        if (user == null) {
+            throw new NotFoundException("User id " + userId + " was not found");
+        }
         return "User " + user.getId() +" was found: " + user;
     }
 
+
+    @RequestMapping(method = RequestMethod.POST, value = "/findByEmailAddress-user", produces = "text/plain")
+    public @ResponseBody
+    String findByEmailAddress(@RequestBody String emailAddress) {
+        if (UtilString.isEmail(emailAddress)) {
+            User user = userService.findByEmailAddress(emailAddress);
+            if (user == null) {
+                throw new NotFoundException("User Email Address: " + emailAddress + " was not found");
+            }
+            return "User with Email Address " + user.getEmailAddress() + " was found: " + user;
+        }
+        throw new BadRequestException("The Email Address: " + emailAddress + " contains a mistake.");
+    }
+
+    @RequestMapping(method = RequestMethod.POST, value = "/findByPhoneNumber-user", produces = "text/plain")
+    public @ResponseBody
+    String findByPhoneNumber(@RequestBody String phoneNumber) {
+        String realPhoneNumber = UtilString.phoneChecker(phoneNumber);
+        if (realPhoneNumber != null) {
+            User user = userService.findByPhoneNumber(realPhoneNumber);
+            if (user == null) {
+                throw new NotFoundException("User Phone Number: " + phoneNumber + " was not found");
+            }
+            return "User with Phone Number " + user.getPhone() + " was found: " + user;
+        }
+        throw new BadRequestException("The Phone Number: " + phoneNumber + " contains a mistake.");
+    }
 
 }

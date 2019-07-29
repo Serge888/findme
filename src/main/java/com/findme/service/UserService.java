@@ -10,4 +10,6 @@ public interface UserService {
     User update(User user) throws InternalServerException;
     User delete(User user) throws InternalServerException;
     User findById(Long id) throws NotFoundException, InternalServerException;
+    User findByPhoneNumber(String phoneNumber) throws NotFoundException, InternalServerException;
+    User findByEmailAddress(String emailAddress) throws NotFoundException, InternalServerException;
 }

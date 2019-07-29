@@ -13,6 +13,14 @@ import java.util.List;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
+@NamedQueries({
+        @NamedQuery(
+                name = "User.FindByPhone",
+                query = "select u from User u where u.phone = :phoneNumber"),
+        @NamedQuery(
+                name = "User.findByEmailAddress",
+                query = "select u from User u where u.emailAddress = :emailAddress")
+})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -56,14 +64,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     private RelationshipStatus relationShipStatus;
 
-
-//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "userFrom", cascade = CascadeType.ALL)
-//    private List<Message> messageSent;
-//
-//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "userTo", cascade = CascadeType.ALL)
-//    private List<Message> messageReceived;
-//
-//    @OneToMany(fetch = FetchType.LAZY, mappedBy = "userPosted", cascade = CascadeType.ALL)
-//    private List<Post> posts;
+    @Column(name = "email_address")
+    private String emailAddress;
 
 }
