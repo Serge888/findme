@@ -1,7 +1,9 @@
 package com.findme.controller;
 
 import com.findme.Util.UtilString;
+import com.findme.exception.AccessForbiddenException;
 import com.findme.exception.BadRequestException;
+import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
 import com.findme.models.User;
 import com.findme.service.UserService;
@@ -26,9 +28,15 @@ public class UserController {
    public ResponseEntity registerUser(@ModelAttribute User user) {
         try {
             userService.save(user);
-        } catch (Exception e) {
+        } catch (BadRequestException  e) {
             return new ResponseEntity<>("User " + user.getFirstName() + " was not registered. " +
                     e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>("User " + user.getFirstName() + " was not registered. " +
+                    e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (InternalServerException e) {
+            return new ResponseEntity<>("User " + user.getFirstName() + " was not registered. " +
+                    e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>("User " + user.getFirstName() + " was registered.", HttpStatus.OK);
    }
