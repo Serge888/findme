@@ -17,3 +17,4 @@ CREATE TABLE users (
 
 
 alter table users add email_address varchar(128);
+alter table users add password varchar(128);

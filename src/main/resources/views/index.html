@@ -14,12 +14,21 @@
                <a href="http://localhost:8010/user/1">user id 1</a>
                 <br>
                <a href="http://localhost:8010/registration">register new user</a>
+                <br><br>
+                <form id="login-form">
+                    <input type="text" name="emailAddress" placeholder="Login: Email Address"><br>
+                    <input type="text" name="password" placeholder="password"><br>
+                    <button type="submit">Login</button>
+                </form>
                 <br>
-                Have a nice day!
+                <button id="logout-button">Logout</button>
+                <br>
+                <p>Have a nice day!</p>
 <!--                <p th:text="${text}"></p>-->
             </div>
         </div>
-
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="http://localhost:63342/findme/js/login.js"></script>
     </body>
     <footer>footer</footer>
 <script>

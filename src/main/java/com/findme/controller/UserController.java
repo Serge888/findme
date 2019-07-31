@@ -1,7 +1,6 @@
 package com.findme.controller;
 
 import com.findme.Util.UtilString;
-import com.findme.exception.AccessForbiddenException;
 import com.findme.exception.BadRequestException;
 import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
@@ -14,13 +13,44 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpSession;
+
 @Controller
+@SuppressWarnings("Duplicates")
 public class UserController {
     private UserService userService;
 
     @Autowired
     public UserController(UserService userService) {
         this.userService = userService;
+    }
+
+
+   @RequestMapping(method = RequestMethod.POST, value = "/login")
+   public ResponseEntity loginUser(HttpSession session, @ModelAttribute User user) {
+       User foundUser;
+        try {
+            foundUser = userService.userLogin(user.getEmailAddress(), user.getPassword());
+            session.setAttribute(user.getEmailAddress(), foundUser);
+        } catch (BadRequestException  e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (InternalServerException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>("Welcome " + foundUser.getFirstName() + "!", HttpStatus.OK);
+   }
+
+
+    @RequestMapping(method = RequestMethod.GET, value = "/logout")
+    public ResponseEntity logoutUser(HttpSession session) {
+        if (session != null) {
+            session.invalidate();
+        } else {
+            throw new BadRequestException("You were not logged iin.");
+        }
+        return new ResponseEntity<>("Hope see you soon.", HttpStatus.OK);
     }
 
 

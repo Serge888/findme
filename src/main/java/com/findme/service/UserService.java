@@ -12,4 +12,5 @@ public interface UserService {
     User findById(Long id) throws NotFoundException, InternalServerException;
     User findByPhoneNumber(String phoneNumber) throws NotFoundException, InternalServerException;
     User findByEmailAddress(String emailAddress) throws NotFoundException, InternalServerException;
+    User userLogin(String emailAddress, String password) throws NotFoundException, InternalServerException;
 }

@@ -3,6 +3,7 @@ package com.findme.service;
 import com.findme.Util.UtilString;
 import com.findme.exception.BadRequestException;
 import com.findme.exception.InternalServerException;
+import com.findme.exception.NotFoundException;
 import com.findme.models.User;
 import com.findme.dao.UserDao;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +15,7 @@ import java.util.Date;
 @Service
 public class UserServiceImpl implements UserService {
     private final UserDao userDao;
+
 
     @Autowired
     public UserServiceImpl(UserDao userDao) {
@@ -31,6 +33,11 @@ public class UserServiceImpl implements UserService {
         if (!UtilString.isEmail(emailAddress)) {
             throw new BadRequestException("Email Address contains a mistake");
         }
+        String password = user.getPassword();
+        if (password == null || password.length() < 6) {
+            throw new BadRequestException("Your password must be longer than 5 symbols.");
+        }
+
         String realPhoneNumber = UtilString.phoneChecker(user.getPhone());
         if (realPhoneNumber == null) {
             throw new BadRequestException("Phone Number contains a mistake");
@@ -42,6 +49,7 @@ public class UserServiceImpl implements UserService {
         if (userDao.findByPhoneNumber(realPhoneNumber) != null) {
             throw new BadRequestException("User with phone number: " + realPhoneNumber + " already exists.");
         }
+        user.setPassword(password);
         user.setDateRegistered(new Date());
         return userDao.save(user);
     }
@@ -70,5 +78,28 @@ public class UserServiceImpl implements UserService {
     public User findByEmailAddress(String emailAddress) throws InternalServerException {
         return userDao.findByEmailAddress(emailAddress);
     }
+
+    @Override
+    public User userLogin(String emailAddress, String password) throws NotFoundException, InternalServerException {
+        if (emailAddress == null || password == null) {
+            throw new BadRequestException("Password and login can't be null.");
+        }
+
+        emailAddress = emailAddress.trim();
+        if (!UtilString.isEmail(emailAddress)) {
+            throw new BadRequestException("Login contains a mistake");
+        }
+
+        User user = userDao.findByEmailAddress(emailAddress);
+        if (user == null) {
+            throw new NotFoundException("User with email address: " + emailAddress + " was not found.");
+        }
+
+        if (user.getPassword() == null || !user.getPassword().equals(password)) {
+            throw new BadRequestException("Incorrect password.");
+        }
+        return user;
+    }
+
 
 }
