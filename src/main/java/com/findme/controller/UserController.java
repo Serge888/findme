@@ -16,7 +16,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpSession;
 
 @Controller
-@SuppressWarnings("Duplicates")
 public class UserController {
     private UserService userService;
 
@@ -31,7 +30,7 @@ public class UserController {
        User foundUser;
         try {
             foundUser = userService.userLogin(user.getEmailAddress(), user.getPassword());
-            session.setAttribute(user.getEmailAddress(), foundUser);
+            session.setAttribute("id", foundUser.getId());
         } catch (BadRequestException  e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (NotFoundException e) {
