@@ -45,10 +45,10 @@ public class UserController {
 
     @RequestMapping(method = RequestMethod.GET, value = "/logout")
     public ResponseEntity logoutUser(HttpSession session) {
-        if (session != null) {
+        if (session != null && !session.isNew()) {
             session.invalidate();
         } else {
-            throw new BadRequestException("You were not logged iin.");
+            return new ResponseEntity<>("You were not logged iin.", HttpStatus.BAD_REQUEST);
         }
         return new ResponseEntity<>("Hope see you soon.", HttpStatus.OK);
     }
