@@ -4,7 +4,6 @@ import lombok.*;
 
 import javax.persistence.*;
 import java.util.Date;
-import java.util.List;
 
 @Entity
 @Table(name = "users")
@@ -69,5 +68,6 @@ public class User {
 
     @Column(name = "password")
     private String password;
+
 
 }

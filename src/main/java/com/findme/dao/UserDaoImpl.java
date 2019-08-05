@@ -1,7 +1,6 @@
 package com.findme.dao;
 
 import com.findme.exception.InternalServerException;
-import com.findme.exception.NotFoundException;
 import com.findme.models.User;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.HttpServerErrorException;
