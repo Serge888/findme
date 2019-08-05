@@ -26,26 +26,27 @@ public class UserController {
 
 
    @RequestMapping(method = RequestMethod.POST, value = "/login")
-   public ResponseEntity loginUser(HttpSession session, @ModelAttribute User user) {
+   public ResponseEntity loginUser(HttpSession session, @RequestParam String emailAddress,
+                                   @RequestParam String password) {
        User foundUser;
         try {
-            foundUser = userService.userLogin(user.getEmailAddress(), user.getPassword());
+            foundUser = userService.userLogin(emailAddress, password);
             session.setAttribute("id", foundUser.getId());
         } catch (BadRequestException  e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (NotFoundException e) {
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (InternalServerException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>("Welcome " + foundUser.getFirstName() + "!", HttpStatus.OK);
+        return new ResponseEntity<>(HttpStatus.OK);
    }
 
 
     @RequestMapping(method = RequestMethod.GET, value = "/logout")
     public ResponseEntity logoutUser(HttpSession session) {
         if (session != null && !session.isNew()) {
-            session.invalidate();
+            session.removeAttribute("id");
         } else {
             return new ResponseEntity<>("You were not logged iin.", HttpStatus.BAD_REQUEST);
         }
