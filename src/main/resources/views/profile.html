@@ -5,6 +5,7 @@
         <title>Find me</title>
     </head>
     <body>
+    <div><a href="http://localhost:8010/">Home</a> </div>
         <div>
             <div class="left">
                 <h1>Photo</h1>
@@ -12,6 +13,51 @@
                 <div>
                     <button class="btn">Send message</button>
                 </div>
+                <div class="rel">
+                    <br>
+                    <form id="form-saveRequest">
+                        <p>Sent request</p>
+                        My id:<br>
+                        <input type="text" name="userIdFrom" placeholder="User id from"><br>
+                        Another user id:<br>
+                        <input type="text" name="userIdTo" placeholder="User id to"><br>
+                        <button class="btnRed" type="submit">Save a new request</button>
+                    </form>
+                    <br>
+                    <div id="savedRequest"></div>
+
+                    <br>
+                    <form id="form-confirmRequest">
+                        <p>Update Relationship</p>
+                        My id:<br>
+                        <input type="text" name="userIdFrom" placeholder="User id from"><br>
+                        <input type="text" name="userIdTo" placeholder="User id to"><br>
+                        <input type="text" name="status" placeholder="status"><br>
+                        <button class="btnRed" type="submit">Change a request status</button>
+                    </form>
+                    <br>
+                    <br>
+                    <form id="form-cancelRequest">
+                        <p>Cancel Request</p>
+                        My id:<br>
+                        <input type="text" name="userIdFrom" placeholder="User id from"><br>
+                        <input type="text" name="userIdTo" placeholder="User id to"><br>
+                        <button class="btnRed" type="submit">Cancel request</button>
+                    </form>
+                    <br>
+                    <div id="confirmRequest"></div>
+
+                    <form id="form-getMyRequests">
+                        My id:<br>
+                        <input type="text" name="userIdFrom" placeholder="User id from"><br>
+                        <!--            <input type="text" name="userIdTo" placeholder="User id to"><br>-->
+                        <button class="btnRed" type="submit">Show my requests</button>
+                    </form>
+                    <br>
+                    <div id="myRequests"></div>
+
+                </div>
+
             </div>
             <div class="right">
                 Styled text here
@@ -23,19 +69,33 @@
                 <p th:text="${user.age}"></p>
             </div>
         </div>
+
+
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+        <script src="http://localhost:63342/findme/js/relationship.js"></script>
+
     </body>
-    <style>
-        .left {
-            float: left;
-            width: 200px;
-            height: 300px;
-            border-style: solid;
-        }
-        .right {
-            margin-left: 300px;
-        }
-        .btn {
-            margin-top: 250px;
-        }
-    </style>
+
+<style>
+    .left {
+        float: left;
+        width: 200px;
+        height: 300px;
+        border-style: solid;
+    }
+    .right {
+        margin-left: 300px;
+    }
+    .btn {
+        margin-top: 250px;
+        background-color: chartreuse;
+    }
+    .rel {
+        margin-top: 30px;
+    }
+    .btnRed {
+        background-color: coral;
+    }
+</style>
+
 </html>

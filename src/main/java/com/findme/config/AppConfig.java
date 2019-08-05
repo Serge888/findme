@@ -105,8 +105,5 @@ public class AppConfig implements WebMvcConfigurer {
         return properties;
     }
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+
 }

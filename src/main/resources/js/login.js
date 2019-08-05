@@ -1,15 +1,12 @@
 $("#login-form").submit(function () {
-    debugger;
     $.ajax({
         url: "login",
         type: "POST",
         data: $(this).serialize(),
         success: function success(data) {
-            debugger;
-            alert(data.valueOf());
+            alert("Welcome");
         },
         error: function error(xhr) {
-            debugger;
             alert(xhr.responseText);
         }
     });
@@ -25,11 +22,9 @@ $("#logout-button").click(function () {
         type: "GET",
         data: {},
         success: function success(data) {
-            debugger;
             alert(data.valueOf());
         },
         error: function error(xhr) {
-            debugger;
             alert(xhr.responseText);
         }
     });
