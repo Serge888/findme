@@ -25,17 +25,13 @@ public class RelationshipServiceImpl implements RelationshipService {
         if (relationship.getUserToId().equals(relationship.getUserFromId())) {
             throw new BadRequestException("You can't send any requests to yourself.");
         }
-        List<Relationship> relationshipList =
-                relationshipDao.findByUserFromId(relationship.getUserFromId());
-        if (relationshipList != null && relationshipList.size() > 0) {
-            for (Relationship existingRelationship : relationshipList) {
-                if (existingRelationship.getUserToId().equals(relationship.getUserToId())) {
-                    throw new BadRequestException("You've already sent request. The status of request is "
-                    + existingRelationship.getFriendRelationshipStatus());
-                }
-            }
+        Relationship foundRelationship =
+                relationshipDao.findByIdFromAndIdTo(relationship.getUserFromId(), relationship.getUserToId());
+        if (foundRelationship != null) {
+            throw new BadRequestException("You've already sent request. The status of request is "
+                    + foundRelationship.getFriendRelationshipStatus());
         }
-        relationship.setFriendRelationshipStatus(FriendRelationshipStatus.REQUEST_SENT);
+        relationship.setFriendRelationshipStatus(FriendRelationshipStatus.REQUESTED);
         return relationshipDao.save(relationship);
     }
 
@@ -46,16 +42,11 @@ public class RelationshipServiceImpl implements RelationshipService {
 
     @Override
     public Relationship update(Relationship relationship) throws InternalServerException {
-        List<Relationship> relationshipList =
-                relationshipDao.findByUserFromId(relationship.getUserFromId());
-        if (relationshipList != null && relationshipList.size() > 0) {
-            for (Relationship existingRelationship : relationshipList) {
-                if (existingRelationship.getUserToId().equals(relationship.getUserToId())) {
-                    Relationship foundRelationship = relationshipDao.findById(existingRelationship.getId());
-                    foundRelationship.setFriendRelationshipStatus(relationship.getFriendRelationshipStatus());
-                    return relationshipDao.update(foundRelationship);
-                }
-            }
+        Relationship foundRelationship =
+                relationshipDao.findByIdFromAndIdTo(relationship.getUserFromId(), relationship.getUserToId());
+        if (foundRelationship != null) {
+            foundRelationship.setFriendRelationshipStatus(relationship.getFriendRelationshipStatus());
+            return relationshipDao.update(foundRelationship);
         }
         throw new NotFoundException("Friend relationship doesn't exist.");
     }
@@ -66,15 +57,16 @@ public class RelationshipServiceImpl implements RelationshipService {
     }
 
     @Override
+    public Relationship findByIdFromAndIdTo(Long userFromId, Long userToId) throws InternalServerException {
+        return relationshipDao.findByIdFromAndIdTo(userFromId, userToId);
+    }
+
+    @Override
     public Relationship cancelRelationship(Long userIdFrom, Long userIdTo) throws InternalServerException {
-        List<Relationship> relationshipList = relationshipDao.findByUserFromId(userIdFrom);
-        if (relationshipList != null && relationshipList.size() > 0) {
-            for (Relationship relationship : relationshipList) {
-                if (relationship.getUserToId().equals(userIdTo)
-                        && FriendRelationshipStatus.REQUEST_SENT.equals(relationship.getFriendRelationshipStatus())) {
-                    return relationshipDao.delete(relationship);
-                }
-            }
+        Relationship foundRelationship = relationshipDao.findByIdFromAndIdTo(userIdFrom, userIdTo);
+        if (foundRelationship != null
+                && FriendRelationshipStatus.REQUESTED.equals(foundRelationship.getFriendRelationshipStatus())) {
+            return relationshipDao.delete(foundRelationship);
         }
         throw new BadRequestException("You can't cancel your request");
     }
@@ -89,4 +81,6 @@ public class RelationshipServiceImpl implements RelationshipService {
     public List<Relationship> findByUserToId(Long userToId) throws InternalServerException {
         return relationshipDao.findByUserToId(userToId);
     }
+
+
 }

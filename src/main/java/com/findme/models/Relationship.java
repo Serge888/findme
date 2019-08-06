@@ -14,7 +14,10 @@ import javax.persistence.*;
                 query = "select r from Relationship r where r.userFromId = :userFromId"),
         @NamedQuery(
                 name = "Relationship.findByUserToId",
-                query = "select r from Relationship r where r.userToId = :userToId")
+                query = "select r from Relationship r where r.userToId = :userToId"),
+        @NamedQuery(
+                name = "Relationship.findByIdFromAndIdTo",
+                query = "select r from Relationship r where r.userToId = :userToId and r.userFromId = :userFromId")
 })
 public class Relationship {
 

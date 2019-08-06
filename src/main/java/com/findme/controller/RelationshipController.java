@@ -4,7 +4,6 @@ import com.findme.Util.UtilString;
 import com.findme.exception.BadRequestException;
 import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
-import com.findme.models.FriendRelationshipStatus;
 import com.findme.models.Relationship;
 import com.findme.models.User;
 import com.findme.service.RelationshipService;
@@ -19,13 +18,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpSession;
-
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-
-import static com.findme.models.FriendRelationshipStatus.*;
 
 @Controller
 public class RelationshipController {
@@ -82,7 +76,7 @@ public class RelationshipController {
             userTo = userService.findById(userIdToL);
             relationship.setUserFromId(userFrom.getId());
             relationship.setUserToId(userTo.getId());
-            relationship.setFriendRelationshipStatus(findFriendRelationshipStatus(status));
+            relationship.setFriendRelationshipStatus(UtilString.findFriendRelationshipStatus(status));
             relationshipService.update(relationship);
         } catch (BadRequestException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -156,6 +150,25 @@ public class RelationshipController {
         return new ResponseEntity<>(relationshipList, HttpStatus.OK);
     }
 
+    @RequestMapping(method = RequestMethod.GET, value = "/get-relationship-status/{userIdFrom}/{userIdTo}")
+    public ResponseEntity getRelationshipStatus(HttpSession session, @PathVariable  String userIdFrom,
+                                          @PathVariable  String userIdTo) {
+        Relationship relationship;
+        Long userIdFromL = UtilString.stringToLong(userIdFrom);
+        Long userIdToL = UtilString.stringToLong(userIdTo);
+        try {
+            isUserLoggedIn(session, userIdFrom);
+            relationship = relationshipService.findByIdFromAndIdTo(userIdFromL, userIdToL);
+        }  catch (BadRequestException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (InternalServerException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>("Your relationship status is "
+                + relationship.getFriendRelationshipStatus(), HttpStatus.OK);
+    }
 
 
 
@@ -164,19 +177,5 @@ public class RelationshipController {
         if (session.getAttribute("id") != UtilString.stringToLong(userIdFrom)) {
             throw new BadRequestException("First you should login.");
         }
-    }
-
-    private FriendRelationshipStatus findFriendRelationshipStatus(String status) {
-        switch (status) {
-            case "FRIEND":
-                return FRIEND;
-            case "NO_LONGER_FRIENDS":
-                return NO_LONGER_FRIENDS;
-            case "REQUEST_SENT":
-                return REQUEST_SENT;
-            case "REQUEST_DENIED":
-                return REQUEST_DENIED;
-        }
-        throw new BadRequestException("Unknown Friend Relationship Status.");
     }
 }

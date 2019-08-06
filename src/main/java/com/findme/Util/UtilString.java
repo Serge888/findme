@@ -1,6 +1,7 @@
 package com.findme.Util;
 
 import com.findme.exception.BadRequestException;
+import com.findme.models.FriendRelationshipStatus;
 
 public class UtilString {
 
@@ -8,6 +9,7 @@ public class UtilString {
         try {
             return Long.parseLong(string);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new BadRequestException("Can't convert it to Long. Please, check you request and try again.");
         }
     }
@@ -39,6 +41,15 @@ public class UtilString {
             return realPhoneNumber.toString();
         } else {
             return null;
+        }
+    }
+
+    public static FriendRelationshipStatus findFriendRelationshipStatus(String status) throws BadRequestException {
+        try {
+            return FriendRelationshipStatus.valueOf(status);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BadRequestException("Unknown Friend Relationship Status.");
         }
     }
 }

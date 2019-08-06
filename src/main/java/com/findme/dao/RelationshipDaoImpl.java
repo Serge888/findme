@@ -18,7 +18,7 @@ public class RelationshipDaoImpl extends GeneralDao<Relationship> implements Rel
     public Relationship findById(Long id) throws InternalServerException {
         Relationship relationship;
         try {
-            relationship =  entityManager.find(Relationship.class, id);
+            relationship = entityManager.find(Relationship.class, id);
         } catch (HttpServerErrorException.InternalServerError e) {
             throw new InternalServerException("Something went wrong with findById userId = " + id);
         }
@@ -63,6 +63,21 @@ public class RelationshipDaoImpl extends GeneralDao<Relationship> implements Rel
             entityManager.remove(findById(relationship.getId()));
         } catch (Exception ex) {
             throw new InternalServerException("Something went wrong with delete entity: " + relationship);
+        }
+        return relationship;
+    }
+
+    @Override
+    public Relationship findByIdFromAndIdTo(Long userFromId, Long userToId) throws InternalServerException {
+        Relationship relationship;
+        try {
+            relationship = entityManager.createNamedQuery("Relationship.findByIdFromAndIdTo", Relationship.class)
+                    .setParameter("userFromId", userFromId)
+                    .setParameter("userToId", userToId)
+                    .getSingleResult();
+        } catch (HttpServerErrorException.InternalServerError e) {
+            throw new InternalServerException("Something went wrong with findByIdFromAndIdTo userFromId = "
+                    + userFromId + " userToId " + userToId);
         }
         return relationship;
     }
