@@ -1,13 +1,12 @@
 package com.findme.controller;
 
-import com.findme.Util.UtilString;
 import com.findme.exception.BadRequestException;
 import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
+import com.findme.models.FriendRelationshipStatus;
 import com.findme.models.Relationship;
-import com.findme.models.User;
 import com.findme.service.RelationshipService;
-import com.findme.service.UserService;
+import com.findme.util.UtilString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,12 +23,10 @@ import java.util.List;
 @Controller
 public class RelationshipController {
     private RelationshipService relationshipService;
-    private UserService userService;
 
     @Autowired
-    public RelationshipController(RelationshipService relationshipService, UserService userService) {
+    public RelationshipController(RelationshipService relationshipService) {
         this.relationshipService = relationshipService;
-        this.userService = userService;
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/add-relationship")
@@ -38,14 +35,10 @@ public class RelationshipController {
         Relationship relationship = new Relationship();
         Long userIdFromL = UtilString.stringToLong(userIdFrom);
         Long userIdToL = UtilString.stringToLong(userIdTo);
-        User userFrom;
-        User userTo;
         try {
             isUserLoggedIn(session, userIdFrom);
-            userFrom = userService.findById(userIdFromL);
-            userTo = userService.findById(userIdToL);
-            relationship.setUserFromId(userFrom.getId());
-            relationship.setUserToId(userTo.getId());
+            relationship.setUserFromId(userIdFromL);
+            relationship.setUserToId(userIdToL);
             relationshipService.save(relationship);
 
         }  catch (BadRequestException e) {
@@ -55,7 +48,7 @@ public class RelationshipController {
         } catch (InternalServerException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>("Your request to " + userTo.getFirstName() + " was sent.",
+        return new ResponseEntity<>("Your request to user id " + userIdToL + " was sent.",
                 HttpStatus.OK);
     }
 
@@ -66,17 +59,14 @@ public class RelationshipController {
                                              @RequestParam String userIdTo,
                                              @RequestParam String status) {
         Relationship relationship = new Relationship();
+        FriendRelationshipStatus friendRelationshipStatus = UtilString.findFriendRelationshipStatus(status);
         Long userIdFromL = UtilString.stringToLong(userIdFrom);
         Long userIdToL = UtilString.stringToLong(userIdTo);
-        User userFrom;
-        User userTo;
         try {
             isUserLoggedIn(session, userIdTo);
-            userFrom = userService.findById(userIdFromL);
-            userTo = userService.findById(userIdToL);
-            relationship.setUserFromId(userFrom.getId());
-            relationship.setUserToId(userTo.getId());
-            relationship.setFriendRelationshipStatus(UtilString.findFriendRelationshipStatus(status));
+            relationship.setUserFromId(userIdFromL);
+            relationship.setUserToId(userIdToL);
+            relationship.setFriendRelationshipStatus(friendRelationshipStatus);
             relationshipService.update(relationship);
         } catch (BadRequestException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -85,9 +75,33 @@ public class RelationshipController {
         } catch (InternalServerException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
-        return new ResponseEntity<>("Your request to " + userTo.getFirstName() + " was sent." +
-                " The currently status is " + relationship.getFriendRelationshipStatus(),
-                HttpStatus.OK);
+        return new ResponseEntity<>("Your currently status with user id " + userIdToL + " is "
+                + relationship.getFriendRelationshipStatus(), HttpStatus.OK);
+    }
+
+
+    @RequestMapping(method = RequestMethod.POST, value = "/delete-friendship")
+    public ResponseEntity deleteFriendship(HttpSession session,
+                                             @RequestParam String userIdFrom,
+                                             @RequestParam String userIdTo) {
+        Relationship relationship = new Relationship();
+        Long userIdFromL = UtilString.stringToLong(userIdFrom);
+        Long userIdToL = UtilString.stringToLong(userIdTo);
+        try {
+            isUserLoggedIn(session, userIdFrom);
+            relationship.setUserFromId(userIdFromL);
+            relationship.setUserToId(userIdToL);
+            relationship.setFriendRelationshipStatus(FriendRelationshipStatus.DELETED);
+            relationshipService.update(relationship);
+        } catch (BadRequestException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
+        } catch (InternalServerException e) {
+            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>("Your currently status with user id " + userIdToL + " is "
+                + relationship.getFriendRelationshipStatus(), HttpStatus.OK);
     }
 
 

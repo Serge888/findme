@@ -54,3 +54,22 @@ $("#form-cancelRequest").submit(function () {
     });
     return false;
 });
+
+// Delete Friend
+$("#form-deleteFriend").submit(function () {
+    debugger;
+    $.ajax({
+        url: "/delete-friendship",
+        type: "POST",
+        data: $(this).serialize(),
+        success: function success() {
+        debugger;
+            alert("Friend was deleted.");
+        },
+        error: function error(xhr) {
+        debugger;
+            alert(xhr.responseText);
+        }
+    });
+    return false;
+});

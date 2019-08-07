@@ -1,11 +1,11 @@
 package com.findme.service;
 
-import com.findme.Util.UtilString;
 import com.findme.exception.BadRequestException;
 import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
 import com.findme.models.User;
 import com.findme.dao.UserDao;
+import com.findme.util.UtilString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

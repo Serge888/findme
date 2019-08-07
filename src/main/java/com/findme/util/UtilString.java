@@ -1,4 +1,4 @@
-package com.findme.Util;
+package com.findme.util;
 
 import com.findme.exception.BadRequestException;
 import com.findme.models.FriendRelationshipStatus;

@@ -1,6 +1,6 @@
 package com.findme.controller;
 
-import com.findme.Util.UtilString;
+import com.findme.util.UtilString;
 import com.findme.models.Message;
 import com.findme.service.MessageService;
 import org.springframework.beans.factory.annotation.Autowired;

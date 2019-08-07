@@ -1,6 +1,6 @@
 package com.findme.controller;
 
-import com.findme.Util.UtilString;
+import com.findme.util.UtilString;
 import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
 import com.findme.models.Post;

@@ -4,5 +4,6 @@ public enum FriendRelationshipStatus {
     REQUESTED,
     CANCELED,
     ACCEPTED,
-    DENIED
+    DENIED,
+    DELETED
 }

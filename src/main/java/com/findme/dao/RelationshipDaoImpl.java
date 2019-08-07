@@ -1,6 +1,7 @@
 package com.findme.dao;
 
 import com.findme.exception.InternalServerException;
+import com.findme.models.FriendRelationshipStatus;
 import com.findme.models.Relationship;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.HttpServerErrorException;
@@ -57,6 +58,43 @@ public class RelationshipDaoImpl extends GeneralDao<Relationship> implements Rel
         return relationshipList;
     }
 
+
+    @Override
+    public Relationship findByIds(Long userFromId, Long userToId) throws InternalServerException {
+        Relationship relationship;
+        try {
+            relationship = entityManager.createNamedQuery("Relationship.findByIds", Relationship.class)
+                    .setParameter("userFromId", userFromId)
+                    .setParameter("userToId", userToId)
+                    .getSingleResult();
+        } catch (HttpServerErrorException.InternalServerError e) {
+            throw new InternalServerException("Something went wrong with findByIds userFromId = "
+                    + userFromId + " userToId " + userToId);
+        }
+        return relationship;
+    }
+
+
+    @Override
+    public List<Relationship> findByUserIdAndStatesRelationship(Long userId, FriendRelationshipStatus status) throws InternalServerException {
+        List<Relationship> relationshipList;
+        try {
+            relationshipList = entityManager.createNamedQuery("Relationship.findByUserIdAndStatesRelationship", Relationship.class)
+                    .setParameter("userId", userId)
+                    .setParameter("friendRelationshipStatus", status)
+                    .getResultList();
+        } catch (NoResultException e) {
+            System.out.println(e.getMessage());
+            return null;
+        }
+        catch (HttpServerErrorException.InternalServerError e) {
+            throw new InternalServerException("Something went wrong with findByUserIdAndStatesRelationship userId = " + userId +
+                    " and friendRelationshipStatus: " + status);
+        }
+        return relationshipList;
+    }
+
+
     @Override
     public Relationship delete(Relationship relationship) throws InternalServerException {
         try {
@@ -67,6 +105,7 @@ public class RelationshipDaoImpl extends GeneralDao<Relationship> implements Rel
         return relationship;
     }
 
+
     @Override
     public Relationship findByIdFromAndIdTo(Long userFromId, Long userToId) throws InternalServerException {
         Relationship relationship;
@@ -75,6 +114,9 @@ public class RelationshipDaoImpl extends GeneralDao<Relationship> implements Rel
                     .setParameter("userFromId", userFromId)
                     .setParameter("userToId", userToId)
                     .getSingleResult();
+        } catch (NoResultException e) {
+            e.getMessage();
+            return null;
         } catch (HttpServerErrorException.InternalServerError e) {
             throw new InternalServerException("Something went wrong with findByIdFromAndIdTo userFromId = "
                     + userFromId + " userToId " + userToId);

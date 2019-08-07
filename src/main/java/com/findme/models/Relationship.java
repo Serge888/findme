@@ -2,6 +2,8 @@ package com.findme.models;
 
 import lombok.*;
 import javax.persistence.*;
+import java.time.LocalDate;
+import java.util.Date;
 
 @Entity
 @Data
@@ -17,7 +19,15 @@ import javax.persistence.*;
                 query = "select r from Relationship r where r.userToId = :userToId"),
         @NamedQuery(
                 name = "Relationship.findByIdFromAndIdTo",
-                query = "select r from Relationship r where r.userToId = :userToId and r.userFromId = :userFromId")
+                query = "select r from Relationship r where r.userToId = :userToId and r.userFromId = :userFromId"),
+        @NamedQuery(
+                name = "Relationship.findByIds",
+                query = "select r from Relationship r where (r.userToId = :userToId and r.userFromId = :userFromId) or "
+                        + "(r.userToId = :userFromId and r.userFromId = :userToId)"),
+        @NamedQuery(
+                name = "Relationship.findByUserIdAndStatesRelationship",
+                query = "select r from Relationship r where (r.userToId = :userId or r.userFromId = :userId) " +
+                        "and r.friendRelationshipStatus = :friendRelationshipStatus")
 })
 public class Relationship {
 
@@ -34,6 +44,13 @@ public class Relationship {
     @Enumerated(EnumType.ORDINAL)
     @Column(name = "id_relation_ship_status")
     private FriendRelationshipStatus friendRelationshipStatus;
+
+    @Column (name = "date_created")
+    private LocalDate dateCreated;
+
+    @Column (name = "date_last_updated")
+    private LocalDate dateLastUpdated;
+
 
 
 }
