@@ -1,11 +1,11 @@
 package com.findme.controller;
 
-import com.findme.util.UtilString;
 import com.findme.exception.BadRequestException;
 import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
 import com.findme.models.User;
 import com.findme.service.UserService;
+import com.findme.util.UtilString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

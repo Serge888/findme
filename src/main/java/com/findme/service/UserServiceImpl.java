@@ -11,7 +11,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.Date;
 
-
 @Service
 public class UserServiceImpl implements UserService {
     private final UserDao userDao;

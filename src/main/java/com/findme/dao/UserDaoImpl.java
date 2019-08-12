@@ -11,6 +11,9 @@ import javax.transaction.Transactional;
 @Transactional
 @Repository
 public class UserDaoImpl extends GeneralDao<User> implements UserDao {
+    private String findByPhoneHql = "select u from User u where u.phone = :phoneNumber";
+    private String findByEmailAddressHql = "select u from User u where u.emailAddress = :emailAddress";
+
 
     @Override
     public User findById(Long id) throws InternalServerException {
@@ -27,7 +30,7 @@ public class UserDaoImpl extends GeneralDao<User> implements UserDao {
     public User findByPhoneNumber(String phoneNumber) throws InternalServerException {
         User user;
         try {
-            user =  entityManager.createNamedQuery("User.FindByPhone", User.class)
+            user =  entityManager.createQuery(findByPhoneHql, User.class)
                     .setParameter("phoneNumber", phoneNumber)
                     .getSingleResult();
         }  catch (NoResultException ex) {
@@ -47,7 +50,7 @@ public class UserDaoImpl extends GeneralDao<User> implements UserDao {
     public User findByEmailAddress(String emailAddress) throws InternalServerException {
         User user;
         try {
-            user = entityManager.createNamedQuery("User.findByEmailAddress", User.class)
+            user = entityManager.createQuery(findByEmailAddressHql, User.class)
                     .setParameter("emailAddress", emailAddress)
                     .getSingleResult();
         } catch (NoResultException ex) {

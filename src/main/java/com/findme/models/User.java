@@ -12,14 +12,6 @@ import java.util.Date;
 @EqualsAndHashCode
 @AllArgsConstructor
 @NoArgsConstructor
-@NamedQueries({
-        @NamedQuery(
-                name = "User.FindByPhone",
-                query = "select u from User u where u.phone = :phoneNumber"),
-        @NamedQuery(
-                name = "User.findByEmailAddress",
-                query = "select u from User u where u.emailAddress = :emailAddress")
-})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -59,9 +51,6 @@ public class User {
 
     @Column(name = "university")
     private String university;
-
-    @Enumerated(EnumType.STRING)
-    private RelationshipStatus relationShipStatus;
 
     @Column(name = "email_address")
     private String emailAddress;

@@ -12,7 +12,6 @@ CREATE TABLE users (
     religion varchar(128),
     school varchar(128),
     university varchar(128),
-    relation_ship_status varchar(128)
 );
 
 

@@ -1,9 +1,9 @@
 package com.findme.validation;
 
+import com.findme.models.FriendRelationshipStatus;
+import com.findme.models.Relationship;
+
 public interface Validation {
-    void deleteRelationshipValidation(Long userFromId, Long userToId);
-    void friendQuantityValidation(Long userId);
-    void requestQuantityValidation(Long userId);
-
-
+    Relationship relationshipValidation(Long userFromId, Long userToId,
+                                        Relationship relationship, FriendRelationshipStatus newStatus);
 }

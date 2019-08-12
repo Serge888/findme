@@ -6,6 +6,7 @@ import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
 import com.findme.models.FriendRelationshipStatus;
 import com.findme.models.Relationship;
+import com.findme.util.UtilString;
 import com.findme.validation.Validation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -25,20 +26,11 @@ public class RelationshipServiceImpl implements RelationshipService {
     }
 
     @Override
-    public Relationship save(Relationship relationship) throws InternalServerException {
-        if (relationship.getUserToId().equals(relationship.getUserFromId())) {
+    public Relationship save(String userIdFrom, String userIdTo) throws InternalServerException {
+        if (userIdTo.equals(userIdFrom)) {
             throw new BadRequestException("You can't send any requests to yourself.");
         }
-        validation.requestQuantityValidation(relationship.getUserFromId());
-        validation.friendQuantityValidation(relationship.getUserFromId());
-        validation.friendQuantityValidation(relationship.getUserToId());
-        Relationship foundRelationship =
-                relationshipDao.findByIdFromAndIdTo(relationship.getUserFromId(), relationship.getUserToId());
-        if (foundRelationship != null) {
-            throw new BadRequestException("You've already sent request. The status of request is "
-                    + foundRelationship.getFriendRelationshipStatus());
-        }
-        relationship.setFriendRelationshipStatus(FriendRelationshipStatus.REQUESTED);
+        Relationship relationship = relationshipCreator(userIdFrom, userIdTo, "REQUESTED");
         relationship.setDateCreated(LocalDate.now());
         relationship.setDateLastUpdated(LocalDate.now());
         return relationshipDao.save(relationship);
@@ -50,16 +42,9 @@ public class RelationshipServiceImpl implements RelationshipService {
     }
 
     @Override
-    public Relationship update(Relationship relationship) throws InternalServerException {
-        if (FriendRelationshipStatus.ACCEPTED.equals(relationship.getFriendRelationshipStatus())) {
-            validation.friendQuantityValidation(relationship.getUserFromId());
-            validation.friendQuantityValidation(relationship.getUserToId());
-        }
-        if (FriendRelationshipStatus.DELETED.equals(relationship.getFriendRelationshipStatus())) {
-            validation.deleteRelationshipValidation(relationship.getUserFromId(), relationship.getUserToId());
-        }
-        Relationship foundRelationship =
-                relationshipDao.findByIdFromAndIdTo(relationship.getUserFromId(), relationship.getUserToId());
+    public Relationship update(String userIdFrom, String userIdTo, String status) throws InternalServerException {
+        Relationship relationship = relationshipCreator(userIdFrom, userIdTo, status);
+        Relationship foundRelationship = findByIds(relationship.getUserFromId(), relationship.getUserToId());
         if (foundRelationship != null) {
             foundRelationship.setFriendRelationshipStatus(relationship.getFriendRelationshipStatus());
             foundRelationship.setDateLastUpdated(LocalDate.now());
@@ -78,15 +63,6 @@ public class RelationshipServiceImpl implements RelationshipService {
         return relationshipDao.findByIdFromAndIdTo(userFromId, userToId);
     }
 
-    @Override
-    public Relationship cancelRelationship(Long userIdFrom, Long userIdTo) throws InternalServerException {
-        Relationship foundRelationship = relationshipDao.findByIdFromAndIdTo(userIdFrom, userIdTo);
-        if (foundRelationship != null
-                && FriendRelationshipStatus.REQUESTED.equals(foundRelationship.getFriendRelationshipStatus())) {
-            return relationshipDao.delete(foundRelationship);
-        }
-        throw new BadRequestException("You can't cancel your request");
-    }
 
     @Override
     public Relationship findByIds(Long userFromId, Long userToId) throws InternalServerException {
@@ -109,5 +85,43 @@ public class RelationshipServiceImpl implements RelationshipService {
         return relationshipDao.findByUserToId(userToId);
     }
 
+    private Relationship relationshipCreator(String userIdFrom, String userIdTo, String newStatus) {
+        Long userIdFromL = UtilString.stringToLong(userIdFrom);
+        Long userIdToL = UtilString.stringToLong(userIdTo);
+        FriendRelationshipStatus relationshipStatus = UtilString.findFriendRelationshipStatus(newStatus);
+
+        List<Relationship> allRequestsList = findByUserIdAndStatesRelationship(userIdFromL, FriendRelationshipStatus.REQUESTED);
+        int allRequests = 0;
+        if (allRequestsList != null) {
+            allRequests = allRequestsList.size();
+        }
+
+        List<Relationship> allFriendsUserFromList = findByUserIdAndStatesRelationship(userIdFromL, FriendRelationshipStatus.ACCEPTED);
+        int allFriendsUserFrom = 0;
+        if (allFriendsUserFromList != null) {
+            allFriendsUserFrom = allFriendsUserFromList.size();
+        }
+
+        List<Relationship> allFriendsUserToList = findByUserIdAndStatesRelationship(userIdToL, FriendRelationshipStatus.ACCEPTED);
+        int allFriendsUserTo = 0;
+        if (allFriendsUserToList != null) {
+            allFriendsUserTo = allFriendsUserToList.size();
+        }
+
+        Relationship relationship = findByIds(userIdFromL, userIdToL);
+        if (relationship == null) {
+            relationship = new Relationship();
+            relationship.setUserFromId(userIdFromL);
+            relationship.setUserToId(userIdToL);
+            if (!FriendRelationshipStatus.REQUESTED.equals(relationshipStatus)) {
+             throw new BadRequestException("This relationship doesn't exist. You can sent request only.");
+            }
+        }
+        relationship.setFriendsQuantityUserFrom(allFriendsUserFrom);
+        relationship.setFriendsQuantityUserTo(allFriendsUserTo);
+        relationship.setRequestQuantity(allRequests);
+        relationship = validation.relationshipValidation(userIdFromL, userIdToL, relationship, relationshipStatus);
+        return relationship;
+    }
 
 }
