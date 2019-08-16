@@ -3,6 +3,7 @@ package com.findme.validation;
 import com.findme.exception.BadRequestException;
 import com.findme.models.FriendRelationshipStatus;
 import com.findme.models.Relationship;
+import com.findme.models.User;
 import com.sun.istack.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -10,7 +11,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 
 @Component
-public class ValidationImpl implements Validation {
+public class RelationshipValidationImpl implements RelationshipValidation {
     @Value("${maxRequests:10}")
     private Integer maxRequests;
     @Value("${maxFriends:100}")
@@ -18,17 +19,19 @@ public class ValidationImpl implements Validation {
 
 
     @Override
-    public Relationship relationshipValidation(Long userFromId, Long userToId, @NotNull Relationship relationship,
-                                               FriendRelationshipStatus newStatus) {
+    public Relationship relationshipValidation(User userFrom, User userTo, @NotNull Relationship relationship,
+                                               FriendRelationshipStatus newStatus, Integer allRequests,
+                                               Integer allFriendsUserFrom, Integer allFriendsUserTo) {
 
         // REQUESTED
         if (FriendRelationshipStatus.REQUESTED.equals(newStatus)) {
-            return requestValidation(relationship, newStatus, userFromId, userToId);
+            return requestValidation(relationship, newStatus, userFrom, userTo, allRequests);
         }
 
         // ACCEPTED
         if (FriendRelationshipStatus.ACCEPTED.equals(newStatus)) {
-            return acceptValidation(relationship, newStatus, userFromId);
+            return acceptValidation(relationship, newStatus, userFrom,
+                    allFriendsUserFrom, allFriendsUserTo);
         }
 
         // DELETED
@@ -38,41 +41,40 @@ public class ValidationImpl implements Validation {
 
         // CANCELED
         if (FriendRelationshipStatus.CANCELED.equals(newStatus)) {
-            return canceledValidation(relationship, newStatus, userFromId);
+            return canceledValidation(relationship, newStatus, userFrom);
         }
 
         // DENIED
         if (FriendRelationshipStatus.DENIED.equals(newStatus)) {
-            return deniedValidation(relationship, newStatus, userFromId, userToId);
+            return deniedValidation(relationship, newStatus, userFrom);
         }
         throw new BadRequestException("Unknown relationship status.");
     }
 
 
-
     // - максимальное ко-во исходящих заявок в друзья для одного пользователя - 10
     private Relationship requestValidation(Relationship relationship, FriendRelationshipStatus newStatus,
-                                   Long userFromId, Long userToId) {
+                                           User userFrom, User userTo, Integer allRequests) {
 
-        if (relationship.getUserFromId().equals(userFromId)) {
+        if (relationship.getUserFrom().equals(userFrom)) {
             if (FriendRelationshipStatus.ACCEPTED.equals(relationship.getFriendRelationshipStatus())) {
                 throw new BadRequestException("You are already friends.");
             }
             if (FriendRelationshipStatus.REQUESTED.equals(relationship.getFriendRelationshipStatus())) {
                 throw new BadRequestException("Request already was sent.");
             }
-            requestQuantityValidation(relationship);
+            requestQuantityValidation(allRequests);
             relationship.setFriendRelationshipStatus(newStatus);
             return relationship;
         } else if (FriendRelationshipStatus.ACCEPTED.equals(relationship.getFriendRelationshipStatus())) {
             throw new BadRequestException("You are already friends.");
         } else if (FriendRelationshipStatus.REQUESTED.equals(relationship.getFriendRelationshipStatus())) {
-            throw new BadRequestException("You've already received request from user id " + userToId
+            throw new BadRequestException("You've already received request from user id " + userTo.getId()
                     + " and now you can accept or deny it.");
         } else {
-            requestQuantityValidation(relationship);
-            relationship.setUserFromId(userFromId);
-            relationship.setUserToId(userToId);
+            requestQuantityValidation(allRequests);
+            relationship.setUserFrom(userFrom);
+            relationship.setUserTo(userTo);
             relationship.setFriendRelationshipStatus(newStatus);
             return relationship;
         }
@@ -81,10 +83,10 @@ public class ValidationImpl implements Validation {
 
     // - максимальный допустимый список друзей для одного пользователя - 100
     private Relationship acceptValidation(Relationship relationship, FriendRelationshipStatus newStatus,
-                                  Long userFromId) {
-        if (relationship.getUserFromId().equals(userFromId)
+                                          User userFrom, Integer allFriendsUserFrom, Integer allFriendsUserTo) {
+        if (relationship.getUserFrom().equals(userFrom)
                 && FriendRelationshipStatus.REQUESTED.equals(relationship.getFriendRelationshipStatus())) {
-           friendQuantityValidation(relationship);
+           friendQuantityValidation(allFriendsUserFrom, allFriendsUserTo);
             relationship.setFriendRelationshipStatus(newStatus);
             return relationship;
         }
@@ -108,8 +110,8 @@ public class ValidationImpl implements Validation {
 
 
     private Relationship canceledValidation(Relationship relationship, FriendRelationshipStatus newStatus,
-                                    Long userFromId) {
-        if (relationship.getUserFromId().equals(userFromId) &&
+                                            User userFrom) {
+        if (relationship.getUserFrom().equals(userFrom) &&
                 FriendRelationshipStatus.REQUESTED.equals(relationship.getFriendRelationshipStatus())) {
             relationship.setFriendRelationshipStatus(newStatus);
             return relationship;
@@ -119,8 +121,8 @@ public class ValidationImpl implements Validation {
 
 
     private Relationship deniedValidation(Relationship relationship, FriendRelationshipStatus newStatus,
-                                  Long userFromId, Long userToId) {
-        if (relationship.getUserFromId().equals(userToId)
+                                          User userFrom) {
+        if (relationship.getUserFrom().equals(userFrom)
                 && FriendRelationshipStatus.REQUESTED.equals(relationship.getFriendRelationshipStatus())) {
             relationship.setFriendRelationshipStatus(newStatus);
             return relationship;
@@ -129,17 +131,17 @@ public class ValidationImpl implements Validation {
     }
 
 
-    private void friendQuantityValidation(Relationship relationship) {
-        if (relationship.getFriendsQuantityUserFrom() > maxFriends) {
+    private void friendQuantityValidation(Integer allFriendsUserFrom, Integer allFriendsUserTo) {
+        if (allFriendsUserFrom > maxFriends) {
             throw new BadRequestException("You can not have more than 100 friends.");
         }
-        if (relationship.getFriendsQuantityUserTo() > maxFriends) {
+        if (allFriendsUserTo > maxFriends) {
             throw new BadRequestException("Your recipient can not have more than 100 friends.");
         }
     }
 
-    private void requestQuantityValidation(Relationship relationship) {
-        if (relationship.getRequestQuantity() > maxRequests) {
+    private void requestQuantityValidation(Integer allRequests) {
+        if (allRequests > maxRequests) {
             throw new BadRequestException("You can not send more than 10 friend requests.");
         }
     }

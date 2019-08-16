@@ -6,6 +6,7 @@ import com.findme.exception.NotFoundException;
 import com.findme.models.User;
 import com.findme.service.UserService;
 import com.findme.util.UtilString;
+import com.findme.validation.UserValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,14 +19,15 @@ import javax.servlet.http.HttpSession;
 @Controller
 public class UserController {
     private UserService userService;
+    private UserValidation userValidation;
 
     @Autowired
-    public UserController(UserService userService) {
+    public UserController(UserService userService, UserValidation userValidation) {
         this.userService = userService;
+        this.userValidation = userValidation;
     }
 
-
-   @RequestMapping(method = RequestMethod.POST, value = "/login")
+    @RequestMapping(method = RequestMethod.POST, value = "/login")
    public ResponseEntity loginUser(HttpSession session, @RequestParam String emailAddress,
                                    @RequestParam String password) {
        User foundUser;
@@ -79,13 +81,14 @@ public class UserController {
 
 
     @RequestMapping(method = RequestMethod.GET, path = "/user/{userId}")
-    public String home(Model model, @PathVariable String  userId) {
+    public String home(HttpSession session, Model model, @PathVariable String  userId) {
+        Long profileUserId = UtilString.stringToLong(userId);
+        userValidation.viewProfileValidation(session, profileUserId);
         User user;
-        user = userService.findById(UtilString.stringToLong(userId));
+        user = userService.findById(profileUserId);
         model.addAttribute("user", user);
         return "profile";
     }
-
 
 
     @RequestMapping(method = RequestMethod.POST, value = "/save-user", produces = "text/plain")

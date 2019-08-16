@@ -13,6 +13,14 @@ public class UtilString {
             throw new BadRequestException("Can't convert it to Long. Please, check you request and try again.");
         }
     }
+    public static Integer stringToInteger(String string) throws BadRequestException {
+        try {
+            return Integer.parseInt(string);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BadRequestException("Can't convert it to Integer. Please, check you request and try again.");
+        }
+    }
 
 
     public static boolean isEmail(String emailAddress) {

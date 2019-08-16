@@ -15,11 +15,13 @@ public class Relationship {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(name = "id_user_from")
-    private Long userFromId;
+    @ManyToOne (optional=false, fetch=FetchType.EAGER)
+    @JoinColumn (name="id_user_from", nullable=false)
+    private User userFrom;
 
-    @Column(name = "id_user_to")
-    private Long userToId;
+    @ManyToOne (optional=false, fetch=FetchType.EAGER)
+    @JoinColumn (name="id_user_to", nullable=false)
+    private User userTo;
 
     @Enumerated(EnumType.ORDINAL)
     @Column(name = "id_relation_ship_status")
@@ -30,12 +32,5 @@ public class Relationship {
 
     @Column (name = "date_last_updated")
     private LocalDate dateLastUpdated;
-
-    @Transient
-    private Integer friendsQuantityUserFrom;
-    @Transient
-    private Integer friendsQuantityUserTo;
-    @Transient
-    private Integer requestQuantity;
 
 }

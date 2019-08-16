@@ -3,6 +3,8 @@ package com.findme.dao;
 import com.findme.exception.InternalServerException;
 import com.findme.models.FriendRelationshipStatus;
 import com.findme.models.Relationship;
+import com.findme.models.User;
+import com.findme.util.UtilString;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.HttpServerErrorException;
 
@@ -14,17 +16,21 @@ import java.util.List;
 @Transactional
 @Repository
 public class RelationshipDaoImpl extends GeneralDao<Relationship> implements RelationshipDao {
-    private String findByUserFromIdHql = "select r from Relationship r where r.userFromId = :userFromId";
-    private String findByUserToIdHql = "select r from Relationship r where r.userToId = :userToId";
-    private String findByIdFromAndIdToHql = "select r from Relationship r where r.userToId = :userToId " +
-            " r.userFromId = :userFromId";
 
-    private String findByIdsHql = "select r from Relationship r where (r.userToId = :userToId and" +
-            " r.userFromId = :userFromId) or (r.userToId = :userFromIdInv and r.userFromId = :userToIdInv)";
-
+    private String findByUserFromIdHql = "select r from Relationship r where r.userFrom = :userFromId";
+    private String findByUserToIdHql = "select r from Relationship r where r.userTo = :userToId";
+    private String findByIdFromAndIdToHql = "select r from Relationship r where r.userTo = :userToId " +
+            " r.userFrom = :userFromId";
+    private String findByIdsHql = "select r from Relationship r where (r.userTo = :userToId and" +
+            " r.userFrom = :userFromId) or (r.userTo = :userFromIdInv and r.userFrom = :userToIdInv)";
     private String findByUserIdAndStatesRelationshipHql = "select r from Relationship r " +
-            "where (r.userToId = :userId or r.userFromId = :userId) " +
+            "where (r.userTo = :userIdTo or r.userFrom = :userIdFrom) " +
             "and r.friendRelationshipStatus = :friendRelationshipStatus";
+    private String userFriendsQuantityHqlHql = "select count(r) from Relationship r " +
+            "where (r.userTo = :userIdTo or r.userFrom = :userIdFrom) " +
+            "and r.friendRelationshipStatus = :friendRelationshipStatus";
+
+
 
     @Override
     public Relationship findById(Long id) throws InternalServerException {
@@ -41,74 +47,96 @@ public class RelationshipDaoImpl extends GeneralDao<Relationship> implements Rel
     }
 
     @Override
-    public List<Relationship> findByUserFromId(Long userFromId) throws InternalServerException {
+    public List<Relationship> findByUserFrom(User userFrom) throws InternalServerException {
         List<Relationship> relationshipList;
         try {
             relationshipList = new ArrayList<>(entityManager.createQuery(findByUserFromIdHql, Relationship.class)
-                    .setParameter("userFromId", userFromId)
+                    .setParameter("userFromId", userFrom)
                     .getResultList());
         } catch (NoResultException ex) {
             relationshipList = null;
         } catch (Exception e) {
-            throw new InternalServerException("Something went wrong with findByUserFromId userFromId: "
-                    + userFromId);
+            throw new InternalServerException("Something went wrong with findByUserFrom userFromId: "
+                    + userFrom);
         }
         return relationshipList;
     }
 
     @Override
-    public List<Relationship> findByUserToId(Long userToId) throws InternalServerException {
+    public List<Relationship> findByUserTo(User userTo) throws InternalServerException {
         List<Relationship> relationshipList;
         try {
             relationshipList = new ArrayList<>(entityManager.createQuery(findByUserToIdHql, Relationship.class)
-                    .setParameter("userToId", userToId)
+                    .setParameter("userToId", userTo)
                     .getResultList());
         } catch (NoResultException ex) {
             relationshipList = null;
         } catch (HttpServerErrorException.InternalServerError e) {
-            throw new InternalServerException("Something went wrong with findByUserToId userToId: "
-                    + userToId);
+            throw new InternalServerException("Something went wrong with findByUserTo userToId: "
+                    + userTo.getId());
         }
         return relationshipList;
     }
 
 
     @Override
-    public Relationship findByIds(Long userFromId, Long userToId) throws InternalServerException {
+    public Relationship findByUsers(User userFrom, User userTo) throws InternalServerException{
         Relationship relationship;
         try {
             relationship = entityManager.createQuery(findByIdsHql, Relationship.class)
-                    .setParameter("userFromId", userFromId)
-                    .setParameter("userToId", userToId)
-                    .setParameter("userFromIdInv", userFromId)
-                    .setParameter("userToIdInv", userToId)
+                    .setParameter("userFromId", userFrom)
+                    .setParameter("userToId", userTo)
+                    .setParameter("userFromIdInv", userFrom)
+                    .setParameter("userToIdInv", userTo)
                     .getSingleResult();
         }  catch (NoResultException ex) {
             relationship = null;
         } catch (HttpServerErrorException.InternalServerError e) {
-            throw new InternalServerException("Something went wrong with findByIds userFromId = "
-                    + userFromId + " userToId " + userToId);
+            throw new InternalServerException("Something went wrong with findByUsers userFromId = "
+                    + userFrom.getId() + " userToId " + userTo.getId());
         }
         return relationship;
     }
 
 
     @Override
-    public List<Relationship> findByUserIdAndStatesRelationship(Long userId, FriendRelationshipStatus status) throws InternalServerException {
+    public List<Relationship> findByUserAndStatesRelationship(User user, FriendRelationshipStatus status) throws InternalServerException {
         List<Relationship> relationshipList;
         try {
             relationshipList = entityManager.createQuery(findByUserIdAndStatesRelationshipHql, Relationship.class)
-                    .setParameter("userId", userId)
+                    .setParameter("userIdFrom", user)
+                    .setParameter("userIdTo", user)
                     .setParameter("friendRelationshipStatus", status)
                     .getResultList();
         } catch (NoResultException e) {
             System.out.println(e.getMessage());
             return null;
         } catch (HttpServerErrorException.InternalServerError e) {
-            throw new InternalServerException("Something went wrong with findByUserIdAndStatesRelationship userId = " + userId +
+            throw new InternalServerException("Something went wrong with findByUserAndStatesRelationship userId = " + user.getId() +
                     " and friendRelationshipStatus: " + status);
         }
         return relationshipList;
+    }
+
+
+
+    @Override
+    public Integer relationshipQuantityByUser(User user, FriendRelationshipStatus status) throws InternalServerException {
+       Integer countFriends;
+        try {
+            String string = entityManager.createQuery(userFriendsQuantityHqlHql)
+                    .setParameter("userIdFrom", user)
+                    .setParameter("userIdTo", user)
+                    .setParameter("friendRelationshipStatus", status)
+                    .getSingleResult().toString();
+            countFriends = UtilString.stringToInteger(string);
+        } catch (NoResultException e) {
+            System.out.println(e.getMessage());
+            return null;
+        } catch (HttpServerErrorException.InternalServerError e) {
+            throw new InternalServerException("Something went wrong with relationshipQuantityByUser userId = " + user.getId());
+        }
+        return countFriends;
     }
 
 
@@ -124,19 +152,19 @@ public class RelationshipDaoImpl extends GeneralDao<Relationship> implements Rel
 
 
     @Override
-    public Relationship findByIdFromAndIdTo(Long userFromId, Long userToId) throws InternalServerException {
+    public Relationship findByUserFromAndUserTo(User userFrom, User userTo) throws InternalServerException {
         Relationship relationship;
         try {
             relationship = entityManager.createQuery(findByIdFromAndIdToHql, Relationship.class)
-                    .setParameter("userFromId", userFromId)
-                    .setParameter("userToId", userToId)
+                    .setParameter("userFromId", userFrom)
+                    .setParameter("userToId", userTo)
                     .getSingleResult();
         } catch (NoResultException e) {
             e.getMessage();
             return null;
         } catch (HttpServerErrorException.InternalServerError e) {
-            throw new InternalServerException("Something went wrong with findByIdFromAndIdTo userFromId = "
-                    + userFromId + " userToId " + userToId);
+            throw new InternalServerException("Something went wrong with findByUserFromAndUserTo userFromId = "
+                    + userFrom.getId() + " userToId " + userTo.getId());
         }
         return relationship;
     }

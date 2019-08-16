@@ -6,6 +6,7 @@ import com.findme.exception.NotFoundException;
 import com.findme.models.Relationship;
 import com.findme.service.RelationshipService;
 import com.findme.util.UtilString;
+import com.findme.validation.UserValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,17 +20,19 @@ import java.util.List;
 @Controller
 public class RelationshipController {
     private RelationshipService relationshipService;
+    private UserValidation userValidation;
 
     @Autowired
-    public RelationshipController(RelationshipService relationshipService) {
+    public RelationshipController(RelationshipService relationshipService, UserValidation userValidation) {
         this.relationshipService = relationshipService;
+        this.userValidation = userValidation;
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/add-relationship")
     public ResponseEntity addRelationship(HttpSession session, @RequestParam String userIdFrom,
                                           @RequestParam String userIdTo) {
         try {
-            isUserLoggedIn(session, userIdFrom);
+            userValidation.isUserLoggedIn(session, userIdFrom);
             relationshipService.save(userIdFrom, userIdTo);
         }  catch (BadRequestException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -49,7 +52,7 @@ public class RelationshipController {
                                              @RequestParam String userIdTo,
                                              @RequestParam String status) {
         try {
-            isUserLoggedIn(session, userIdFrom);
+            userValidation.isUserLoggedIn(session, userIdFrom);
             relationshipService.update(userIdFrom, userIdTo, status);
         } catch (BadRequestException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -67,7 +70,7 @@ public class RelationshipController {
     public ResponseEntity<List<Relationship>> getIncomeRequests(HttpSession session, @PathVariable String userId) {
         List<Relationship> relationshipList;
         try {
-            isUserLoggedIn(session, userId);
+            userValidation.isUserLoggedIn(session, userId);
             relationshipList =
                     new ArrayList<>(relationshipService.findByUserToId(UtilString.stringToLong(userId)));
 
@@ -88,7 +91,7 @@ public class RelationshipController {
         List<Relationship> relationshipList;
 
         try {
-            isUserLoggedIn(session, userId);
+            userValidation.isUserLoggedIn(session, userId);
             relationshipList =
                     new ArrayList<>(relationshipService.findByUserFromId(UtilString.stringToLong(userId)));
         } catch (BadRequestException e) {
@@ -108,7 +111,7 @@ public class RelationshipController {
         Long userIdFromL = UtilString.stringToLong(userIdFrom);
         Long userIdToL = UtilString.stringToLong(userIdTo);
         try {
-            isUserLoggedIn(session, userIdFrom);
+            userValidation.isUserLoggedIn(session, userIdFrom);
             relationship = relationshipService.findByIdFromAndIdTo(userIdFromL, userIdToL);
         }  catch (BadRequestException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -121,12 +124,4 @@ public class RelationshipController {
                 + relationship.getFriendRelationshipStatus(), HttpStatus.OK);
     }
 
-
-
-
-    private void isUserLoggedIn(HttpSession session, String userIdFrom) throws BadRequestException {
-        if (session.getAttribute("id") != UtilString.stringToLong(userIdFrom)) {
-            throw new BadRequestException("First you should login.");
-        }
-    }
 }

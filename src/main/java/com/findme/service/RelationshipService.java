@@ -17,5 +17,5 @@ public interface RelationshipService {
     List<Relationship> findByUserToId(Long userToId) throws InternalServerException;
     Relationship findByIds(Long userFromId, Long userToId) throws InternalServerException;
     List<Relationship> findByUserIdAndStatesRelationship(Long userId, FriendRelationshipStatus status) throws InternalServerException;
-
+    Integer relationshipQuantityByUserId(Long userId, FriendRelationshipStatus status);
 }
