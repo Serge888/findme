@@ -55,29 +55,15 @@ public class RelationshipValidationImpl implements RelationshipValidation {
     // - максимальное ко-во исходящих заявок в друзья для одного пользователя - 10
     private Relationship requestValidation(Relationship relationship, FriendRelationshipStatus newStatus,
                                            User userFrom, User userTo, Integer allRequests) {
-
-        if (relationship.getUserFrom().equals(userFrom)) {
-            if (FriendRelationshipStatus.ACCEPTED.equals(relationship.getFriendRelationshipStatus())) {
-                throw new BadRequestException("You are already friends.");
-            }
-            if (FriendRelationshipStatus.REQUESTED.equals(relationship.getFriendRelationshipStatus())) {
-                throw new BadRequestException("Request already was sent.");
-            }
-            requestQuantityValidation(allRequests);
-            relationship.setFriendRelationshipStatus(newStatus);
-            return relationship;
-        } else if (FriendRelationshipStatus.ACCEPTED.equals(relationship.getFriendRelationshipStatus())) {
-            throw new BadRequestException("You are already friends.");
-        } else if (FriendRelationshipStatus.REQUESTED.equals(relationship.getFriendRelationshipStatus())) {
-            throw new BadRequestException("You've already received request from user id " + userTo.getId()
-                    + " and now you can accept or deny it.");
-        } else {
-            requestQuantityValidation(allRequests);
-            relationship.setUserFrom(userFrom);
-            relationship.setUserTo(userTo);
-            relationship.setFriendRelationshipStatus(newStatus);
-            return relationship;
+        if (FriendRelationshipStatus.ACCEPTED.equals(relationship.getFriendRelationshipStatus())
+        || FriendRelationshipStatus.REQUESTED.equals(relationship.getFriendRelationshipStatus())) {
+            throw new BadRequestException("Invalid request.");
         }
+        requestQuantityValidation(allRequests);
+        relationship.setUserFrom(userFrom);
+        relationship.setUserTo(userTo);
+        relationship.setFriendRelationshipStatus(newStatus);
+        return relationship;
     }
 
 

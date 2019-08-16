@@ -52,12 +52,4 @@ public class UtilString {
         }
     }
 
-    public static FriendRelationshipStatus findFriendRelationshipStatus(String status) throws BadRequestException {
-        try {
-            return FriendRelationshipStatus.valueOf(status);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new BadRequestException("Unknown Friend Relationship Status.");
-        }
-    }
 }

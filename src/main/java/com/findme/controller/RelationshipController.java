@@ -3,6 +3,7 @@ package com.findme.controller;
 import com.findme.exception.BadRequestException;
 import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
+import com.findme.models.FriendRelationshipStatus;
 import com.findme.models.Relationship;
 import com.findme.service.RelationshipService;
 import com.findme.util.UtilString;
@@ -32,8 +33,10 @@ public class RelationshipController {
     public ResponseEntity addRelationship(HttpSession session, @RequestParam String userIdFrom,
                                           @RequestParam String userIdTo) {
         try {
+            Long userIdFromL = UtilString.stringToLong(userIdFrom);
+            Long userIdToL = UtilString.stringToLong(userIdTo);
             userValidation.isUserLoggedIn(session, userIdFrom);
-            relationshipService.save(userIdFrom, userIdTo);
+            relationshipService.save(userIdFromL, userIdToL);
         }  catch (BadRequestException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (NotFoundException e) {
@@ -52,8 +55,11 @@ public class RelationshipController {
                                              @RequestParam String userIdTo,
                                              @RequestParam String status) {
         try {
+            Long userIdFromL = UtilString.stringToLong(userIdFrom);
+            Long userIdToL = UtilString.stringToLong(userIdTo);
+            FriendRelationshipStatus friendRelationshipStatus = FriendRelationshipStatus.valueOf(status);
             userValidation.isUserLoggedIn(session, userIdFrom);
-            relationshipService.update(userIdFrom, userIdTo, status);
+            relationshipService.update(userIdFromL, userIdToL, friendRelationshipStatus);
         } catch (BadRequestException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (NotFoundException e) {

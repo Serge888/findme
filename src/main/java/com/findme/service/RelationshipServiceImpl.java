@@ -30,11 +30,11 @@ public class RelationshipServiceImpl implements RelationshipService {
     }
 
     @Override
-    public Relationship save(String userIdFrom, String userIdTo) throws InternalServerException {
+    public Relationship save(Long userIdFrom, Long userIdTo) throws InternalServerException {
         if (userIdTo.equals(userIdFrom)) {
             throw new BadRequestException("You can't send any requests to yourself.");
         }
-        Relationship relationship = relationshipCreator(userIdFrom, userIdTo, "REQUESTED");
+        Relationship relationship = relationshipCreator(userIdFrom, userIdTo, FriendRelationshipStatus.REQUESTED);
         relationship.setDateCreated(LocalDate.now());
         relationship.setDateLastUpdated(LocalDate.now());
         return relationshipDao.save(relationship);
@@ -46,7 +46,7 @@ public class RelationshipServiceImpl implements RelationshipService {
     }
 
     @Override
-    public Relationship update(String userIdFrom, String userIdTo, String status) throws InternalServerException {
+    public Relationship update(Long userIdFrom, Long userIdTo, FriendRelationshipStatus status) throws InternalServerException {
         Relationship relationship = relationshipCreator(userIdFrom, userIdTo, status);
         Relationship foundRelationship = findByIds(relationship.getUserFrom().getId(),
                 relationship.getUserTo().getId());
@@ -104,42 +104,23 @@ public class RelationshipServiceImpl implements RelationshipService {
     }
 
 
-    private Relationship relationshipCreator(String userIdFrom, String userIdTo, String newStatus) {
-        Long userIdFromL = UtilString.stringToLong(userIdFrom);
-        Long userIdToL = UtilString.stringToLong(userIdTo);
-        FriendRelationshipStatus relationshipStatus = UtilString.findFriendRelationshipStatus(newStatus);
-
-        List<Relationship> allRequestsList = findByUserIdAndStatesRelationship(userIdFromL, FriendRelationshipStatus.REQUESTED);
-        int allRequests = 0;
-        if (allRequestsList != null) {
-            allRequests = relationshipQuantityByUserId(userIdFromL, FriendRelationshipStatus.REQUESTED);
-        }
-
-        List<Relationship> allFriendsUserFromList = findByUserIdAndStatesRelationship(userIdFromL, FriendRelationshipStatus.ACCEPTED);
-        int allFriendsUserFrom = 0;
-        if (allFriendsUserFromList != null) {
-            allFriendsUserFrom = relationshipQuantityByUserId(userIdFromL, FriendRelationshipStatus.ACCEPTED);
-        }
-
-        List<Relationship> allFriendsUserToList = findByUserIdAndStatesRelationship(userIdToL, FriendRelationshipStatus.ACCEPTED);
-        int allFriendsUserTo = 0;
-        if (allFriendsUserToList != null) {
-            allFriendsUserTo = relationshipQuantityByUserId(userIdToL, FriendRelationshipStatus.ACCEPTED);
-        }
-
-        User userFrom = userService.findById(userIdFromL);
-        User userTo = userService.findById(userIdToL);
-        Relationship relationship = findByIds(userIdFromL, userIdToL);
+    private Relationship relationshipCreator(Long userIdFrom, Long userIdTo, FriendRelationshipStatus newStatus) {
+        int allRequests = relationshipQuantityByUserId(userIdFrom, FriendRelationshipStatus.REQUESTED);
+        int allFriendsUserFrom = relationshipQuantityByUserId(userIdFrom, FriendRelationshipStatus.ACCEPTED);
+        int allFriendsUserTo = relationshipQuantityByUserId(userIdTo, FriendRelationshipStatus.ACCEPTED);
+        User userFrom = userService.findById(userIdFrom);
+        User userTo = userService.findById(userIdTo);
+        Relationship relationship = findByIds(userIdFrom, userIdTo);
         if (relationship == null) {
             relationship = new Relationship();
             relationship.setUserFrom(userFrom);
             relationship.setUserTo(userTo);
-            if (!FriendRelationshipStatus.REQUESTED.equals(relationshipStatus)) {
+            if (!FriendRelationshipStatus.REQUESTED.equals(newStatus)) {
              throw new BadRequestException("This relationship doesn't exist. You can sent request only.");
             }
         }
         relationship = validation.relationshipValidation(userFrom, userTo, relationship,
-                relationshipStatus, allRequests, allFriendsUserFrom, allFriendsUserTo);
+                newStatus, allRequests, allFriendsUserFrom, allFriendsUserTo);
         return relationship;
     }
 
