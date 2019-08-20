@@ -7,7 +7,6 @@ import com.findme.exception.NotFoundException;
 import com.findme.models.FriendRelationshipStatus;
 import com.findme.models.Relationship;
 import com.findme.models.User;
-import com.findme.util.UtilString;
 import com.findme.validation.RelationshipValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -52,6 +51,8 @@ public class RelationshipServiceImpl implements RelationshipService {
                 relationship.getUserTo().getId());
         if (foundRelationship != null) {
             foundRelationship.setFriendRelationshipStatus(relationship.getFriendRelationshipStatus());
+            foundRelationship.setUserFrom(relationship.getUserFrom());
+            foundRelationship.setUserTo(relationship.getUserTo());
             foundRelationship.setDateLastUpdated(LocalDate.now());
             return relationshipDao.update(foundRelationship);
         }
@@ -73,6 +74,9 @@ public class RelationshipServiceImpl implements RelationshipService {
 
     @Override
     public Relationship findByIds(Long userFromId, Long userToId) throws InternalServerException {
+        if (userFromId == null || userToId == null) {
+            throw new BadRequestException("No one user id cannot be null");
+        }
         User userFrom = userService.findById(userFromId);
         User userTo = userService.findById(userToId);
         return relationshipDao.findByUsers(userFrom, userTo);
@@ -115,9 +119,6 @@ public class RelationshipServiceImpl implements RelationshipService {
             relationship = new Relationship();
             relationship.setUserFrom(userFrom);
             relationship.setUserTo(userTo);
-            if (!FriendRelationshipStatus.REQUESTED.equals(newStatus)) {
-             throw new BadRequestException("This relationship doesn't exist. You can sent request only.");
-            }
         }
         relationship = validation.relationshipValidation(userFrom, userTo, relationship,
                 newStatus, allRequests, allFriendsUserFrom, allFriendsUserTo);

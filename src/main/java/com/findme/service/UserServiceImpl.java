@@ -3,12 +3,15 @@ package com.findme.service;
 import com.findme.exception.BadRequestException;
 import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
+import com.findme.models.FriendRelationshipStatus;
+import com.findme.models.Relationship;
 import com.findme.models.User;
 import com.findme.dao.UserDao;
 import com.findme.util.UtilString;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.servlet.http.HttpSession;
 import java.util.Date;
 
 @Service
@@ -98,6 +101,27 @@ public class UserServiceImpl implements UserService {
             throw new BadRequestException("Incorrect password.");
         }
         return user;
+    }
+
+
+    @Override
+    public void viewProfileValidation(HttpSession session, Long profileUserId, Relationship relationship) throws BadRequestException {
+        if (session.getAttribute("id") == null) {
+            throw new BadRequestException("First you should login.");
+        }
+        Long loggedInUserId = UtilString.stringToLong(session.getAttribute("id").toString());
+        if ((relationship == null && !loggedInUserId.equals(profileUserId))
+                || (!loggedInUserId.equals(profileUserId)
+                && !FriendRelationshipStatus.ACCEPTED.equals(relationship.getFriendRelationshipStatus()))) {
+            throw new BadRequestException("You can view your profile or your friends only.");
+        }
+    }
+
+    @Override
+    public void isUserLoggedIn(HttpSession session, String userIdFrom) throws BadRequestException {
+        if (session.getAttribute("id") != UtilString.stringToLong(userIdFrom)) {
+            throw new BadRequestException("First you should login.");
+        }
     }
 
 

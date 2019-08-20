@@ -6,8 +6,8 @@ import com.findme.exception.NotFoundException;
 import com.findme.models.FriendRelationshipStatus;
 import com.findme.models.Relationship;
 import com.findme.service.RelationshipService;
+import com.findme.service.UserService;
 import com.findme.util.UtilString;
-import com.findme.validation.UserValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +21,12 @@ import java.util.List;
 @Controller
 public class RelationshipController {
     private RelationshipService relationshipService;
-    private UserValidation userValidation;
+    private UserService userService;
 
     @Autowired
-    public RelationshipController(RelationshipService relationshipService, UserValidation userValidation) {
+    public RelationshipController(RelationshipService relationshipService, UserService userService) {
         this.relationshipService = relationshipService;
-        this.userValidation = userValidation;
+        this.userService = userService;
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/add-relationship")
@@ -35,7 +35,7 @@ public class RelationshipController {
         try {
             Long userIdFromL = UtilString.stringToLong(userIdFrom);
             Long userIdToL = UtilString.stringToLong(userIdTo);
-            userValidation.isUserLoggedIn(session, userIdFrom);
+            userService.isUserLoggedIn(session, userIdFrom);
             relationshipService.save(userIdFromL, userIdToL);
         }  catch (BadRequestException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -58,7 +58,7 @@ public class RelationshipController {
             Long userIdFromL = UtilString.stringToLong(userIdFrom);
             Long userIdToL = UtilString.stringToLong(userIdTo);
             FriendRelationshipStatus friendRelationshipStatus = FriendRelationshipStatus.valueOf(status);
-            userValidation.isUserLoggedIn(session, userIdFrom);
+            userService.isUserLoggedIn(session, userIdFrom);
             relationshipService.update(userIdFromL, userIdToL, friendRelationshipStatus);
         } catch (BadRequestException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -76,7 +76,7 @@ public class RelationshipController {
     public ResponseEntity<List<Relationship>> getIncomeRequests(HttpSession session, @PathVariable String userId) {
         List<Relationship> relationshipList;
         try {
-            userValidation.isUserLoggedIn(session, userId);
+            userService.isUserLoggedIn(session, userId);
             relationshipList =
                     new ArrayList<>(relationshipService.findByUserToId(UtilString.stringToLong(userId)));
 
@@ -97,7 +97,7 @@ public class RelationshipController {
         List<Relationship> relationshipList;
 
         try {
-            userValidation.isUserLoggedIn(session, userId);
+            userService.isUserLoggedIn(session, userId);
             relationshipList =
                     new ArrayList<>(relationshipService.findByUserFromId(UtilString.stringToLong(userId)));
         } catch (BadRequestException e) {
@@ -117,7 +117,7 @@ public class RelationshipController {
         Long userIdFromL = UtilString.stringToLong(userIdFrom);
         Long userIdToL = UtilString.stringToLong(userIdTo);
         try {
-            userValidation.isUserLoggedIn(session, userIdFrom);
+            userService.isUserLoggedIn(session, userIdFrom);
             relationship = relationshipService.findByIdFromAndIdTo(userIdFromL, userIdToL);
         }  catch (BadRequestException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);

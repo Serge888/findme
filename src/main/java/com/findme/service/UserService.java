@@ -1,8 +1,12 @@
 package com.findme.service;
 
+import com.findme.exception.BadRequestException;
 import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
+import com.findme.models.Relationship;
 import com.findme.models.User;
+
+import javax.servlet.http.HttpSession;
 
 public interface UserService {
 
@@ -13,4 +17,6 @@ public interface UserService {
     User findByPhoneNumber(String phoneNumber) throws NotFoundException, InternalServerException;
     User findByEmailAddress(String emailAddress) throws NotFoundException, InternalServerException;
     User userLogin(String emailAddress, String password) throws NotFoundException, InternalServerException;
+    void viewProfileValidation(HttpSession session, Long profileUserId, Relationship relationship) throws BadRequestException;
+    void isUserLoggedIn(HttpSession session, String userIdFrom) throws BadRequestException;
 }

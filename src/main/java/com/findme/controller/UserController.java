@@ -3,10 +3,12 @@ package com.findme.controller;
 import com.findme.exception.BadRequestException;
 import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
+import com.findme.models.Relationship;
 import com.findme.models.User;
+import com.findme.service.RelationshipService;
 import com.findme.service.UserService;
 import com.findme.util.UtilString;
-import com.findme.validation.UserValidation;
+import com.findme.validation.RelationshipValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,12 +21,12 @@ import javax.servlet.http.HttpSession;
 @Controller
 public class UserController {
     private UserService userService;
-    private UserValidation userValidation;
+    private RelationshipService relationshipService;
 
     @Autowired
-    public UserController(UserService userService, UserValidation userValidation) {
+    public UserController(UserService userService, RelationshipService relationshipService) {
         this.userService = userService;
-        this.userValidation = userValidation;
+        this.relationshipService = relationshipService;
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/login")
@@ -83,7 +85,9 @@ public class UserController {
     @RequestMapping(method = RequestMethod.GET, path = "/user/{userId}")
     public String home(HttpSession session, Model model, @PathVariable String  userId) {
         Long profileUserId = UtilString.stringToLong(userId);
-        userValidation.viewProfileValidation(session, profileUserId);
+        Long loggedInUserId = (Long) session.getAttribute("id");
+        Relationship relationship = relationshipService.findByIds(loggedInUserId, profileUserId);
+        userService.viewProfileValidation(session, profileUserId, relationship);
         User user;
         user = userService.findById(profileUserId);
         model.addAttribute("user", user);
