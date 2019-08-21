@@ -6,6 +6,7 @@ import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
 import com.findme.models.FriendRelationshipStatus;
 import com.findme.models.Relationship;
+import com.findme.models.TechRelationshipData;
 import com.findme.models.User;
 import com.findme.validation.RelationshipValidation;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,14 +115,15 @@ public class RelationshipServiceImpl implements RelationshipService {
         int allFriendsUserTo = relationshipQuantityByUserId(userIdTo, FriendRelationshipStatus.ACCEPTED);
         User userFrom = userService.findById(userIdFrom);
         User userTo = userService.findById(userIdTo);
+        TechRelationshipData techRelationshipData = new TechRelationshipData(userFrom, userTo, allRequests,
+                allFriendsUserFrom, allFriendsUserTo, newStatus);
         Relationship relationship = findByIds(userIdFrom, userIdTo);
         if (relationship == null) {
             relationship = new Relationship();
             relationship.setUserFrom(userFrom);
             relationship.setUserTo(userTo);
         }
-        relationship = validation.relationshipValidation(userFrom, userTo, relationship,
-                newStatus, allRequests, allFriendsUserFrom, allFriendsUserTo);
+        relationship = validation.relationshipValidation(relationship, techRelationshipData);
         return relationship;
     }
 
