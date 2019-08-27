@@ -15,8 +15,5 @@ import javax.persistence.Embeddable;
 public class TechRelationshipData {
     private User userFrom;
     private User userTo;
-    private Integer allRequests;
-    private Integer allFriendsUserFrom;
-    private Integer allFriendsUserTo;
     private FriendRelationshipStatus newStatus;
 }

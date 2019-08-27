@@ -4,22 +4,40 @@ import com.findme.exception.BadRequestException;
 import com.findme.models.FriendRelationshipStatus;
 import com.findme.models.Relationship;
 import com.findme.models.TechRelationshipData;
-import org.springframework.beans.factory.annotation.Value;
+import com.findme.service.RelationshipService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+@Component
 public class ChangeToRequestValidation extends RelationshipValidationAbstract {
-    @Value("${maxRequests:10}")
-    private Integer maxRequests;
+    private Integer maxRequests = 10;
+    private RelationshipService relationshipService;
+
+    @Autowired
+    public ChangeToRequestValidation(RelationshipService relationshipService) {
+        this.relationshipService = relationshipService;
+    }
+
 
     @Override
     Relationship validation(Relationship relationship, TechRelationshipData techRelationshipData) throws BadRequestException {
-        if (FriendRelationshipStatus.REQUESTED.equals(techRelationshipData.getNewStatus())) {
-            relationship.setFriendRelationshipStatus(techRelationshipData.getNewStatus());
-            relationship.setUserFrom(techRelationshipData.getUserFrom());
-            relationship.setUserTo(techRelationshipData.getUserTo());
-            requestQuantityValidation(techRelationshipData.getAllRequests());
-            return relationship;
+        // CURRENT STATUS - DELETED, CANCELED, DENIED, NULL
+        if (FriendRelationshipStatus.DELETED.equals(relationship.getFriendRelationshipStatus())
+                || FriendRelationshipStatus.CANCELED.equals(relationship.getFriendRelationshipStatus())
+                || FriendRelationshipStatus.DENIED.equals(relationship.getFriendRelationshipStatus())
+                || relationship.getFriendRelationshipStatus() == null) {
+            int allRequests = relationshipService.relationshipQuantityByUserId(techRelationshipData.getUserFrom().getId(),
+                    FriendRelationshipStatus.REQUESTED);
+            if (FriendRelationshipStatus.REQUESTED.equals(techRelationshipData.getNewStatus())) {
+                relationship.setFriendRelationshipStatus(techRelationshipData.getNewStatus());
+                relationship.setUserFrom(techRelationshipData.getUserFrom());
+                relationship.setUserTo(techRelationshipData.getUserTo());
+                requestQuantityValidation(allRequests);
+                relationship.setValidated(true);
+                return relationship;
+            }
         }
-        throw new BadRequestException("Invalid request");
+        return relationship;
     }
 
     private void requestQuantityValidation(Integer allRequests) {

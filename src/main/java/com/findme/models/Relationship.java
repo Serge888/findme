@@ -33,4 +33,7 @@ public class Relationship {
     @Column (name = "date_last_updated")
     private LocalDate dateLastUpdated;
 
+    @Transient
+    private boolean validated = false;
+
 }

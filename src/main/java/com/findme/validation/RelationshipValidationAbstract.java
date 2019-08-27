@@ -4,8 +4,10 @@ import com.findme.exception.BadRequestException;
 import com.findme.models.Relationship;
 import com.findme.models.TechRelationshipData;
 import lombok.Data;
+import org.springframework.stereotype.Component;
 
 @Data
+@Component
 abstract class RelationshipValidationAbstract {
     private RelationshipValidationAbstract next;
 

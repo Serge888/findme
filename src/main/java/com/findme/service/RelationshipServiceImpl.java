@@ -10,6 +10,7 @@ import com.findme.models.TechRelationshipData;
 import com.findme.models.User;
 import com.findme.validation.RelationshipValidation;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -23,7 +24,7 @@ public class RelationshipServiceImpl implements RelationshipService {
 
     @Autowired
     public RelationshipServiceImpl(RelationshipDao relationshipDao,
-                                   RelationshipValidation validation, UserService userService) {
+                                   @Lazy RelationshipValidation validation, UserService userService) {
         this.relationshipDao = relationshipDao;
         this.validation = validation;
         this.userService = userService;
@@ -34,7 +35,7 @@ public class RelationshipServiceImpl implements RelationshipService {
         if (userIdTo.equals(userIdFrom)) {
             throw new BadRequestException("You can't send any requests to yourself.");
         }
-        Relationship relationship = relationshipCreator(userIdFrom, userIdTo, FriendRelationshipStatus.REQUESTED);
+        Relationship relationship = relationshipCreatorForSave(userIdFrom, userIdTo);
         relationship.setDateCreated(LocalDate.now());
         relationship.setDateLastUpdated(LocalDate.now());
         return relationshipDao.save(relationship);
@@ -47,7 +48,7 @@ public class RelationshipServiceImpl implements RelationshipService {
 
     @Override
     public Relationship update(Long userIdFrom, Long userIdTo, FriendRelationshipStatus status) throws InternalServerException {
-        Relationship relationship = relationshipCreator(userIdFrom, userIdTo, status);
+        Relationship relationship = relationshipCreatorForUpdate(userIdFrom, userIdTo, status);
         Relationship foundRelationship = findByIds(relationship.getUserFrom().getId(),
                 relationship.getUserTo().getId());
         if (foundRelationship != null) {
@@ -109,19 +110,30 @@ public class RelationshipServiceImpl implements RelationshipService {
     }
 
 
-    private Relationship relationshipCreator(Long userIdFrom, Long userIdTo, FriendRelationshipStatus newStatus) {
-        int allRequests = relationshipQuantityByUserId(userIdFrom, FriendRelationshipStatus.REQUESTED);
-        int allFriendsUserFrom = relationshipQuantityByUserId(userIdFrom, FriendRelationshipStatus.ACCEPTED);
-        int allFriendsUserTo = relationshipQuantityByUserId(userIdTo, FriendRelationshipStatus.ACCEPTED);
+    private Relationship relationshipCreatorForUpdate(Long userIdFrom, Long userIdTo, FriendRelationshipStatus newStatus) {
         User userFrom = userService.findById(userIdFrom);
         User userTo = userService.findById(userIdTo);
-        TechRelationshipData techRelationshipData = new TechRelationshipData(userFrom, userTo, allRequests,
-                allFriendsUserFrom, allFriendsUserTo, newStatus);
+        TechRelationshipData techRelationshipData = new TechRelationshipData(userFrom, userTo, newStatus);
+        Relationship relationship = findByIds(userIdFrom, userIdTo);
+        if (relationship == null) {
+            throw new BadRequestException("Invalid request");
+        }
+        relationship = validation.relationshipValidation(relationship, techRelationshipData);
+        return relationship;
+    }
+
+    private Relationship relationshipCreatorForSave(Long userIdFrom, Long userIdTo) {
+        User userFrom = userService.findById(userIdFrom);
+        User userTo = userService.findById(userIdTo);
+        TechRelationshipData techRelationshipData = new TechRelationshipData(userFrom, userTo,
+                FriendRelationshipStatus.REQUESTED);
         Relationship relationship = findByIds(userIdFrom, userIdTo);
         if (relationship == null) {
             relationship = new Relationship();
             relationship.setUserFrom(userFrom);
             relationship.setUserTo(userTo);
+        } else {
+            throw new BadRequestException("Invalid request");
         }
         relationship = validation.relationshipValidation(relationship, techRelationshipData);
         return relationship;
