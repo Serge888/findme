@@ -14,7 +14,7 @@ abstract class RelationshipValidationAbstract {
     Relationship nextRelationshipValidation(Relationship relationship, TechRelationshipData techRelationshipData) {
         Relationship returnRelationship = validation(relationship, techRelationshipData);
         if (next != null) {
-            returnRelationship = next.validation(relationship, techRelationshipData);
+            returnRelationship = next.nextRelationshipValidation(relationship, techRelationshipData);
         }
         return returnRelationship;
     }

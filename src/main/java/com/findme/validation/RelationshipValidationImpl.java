@@ -21,13 +21,20 @@ public class RelationshipValidationImpl implements RelationshipValidation {
     public Relationship relationshipValidation(@NotNull Relationship relationship,
                                                @NotNull TechRelationshipData techRelationshipData) {
 
-        RelationshipValidationAbstract changeToRequestValidation = new ChangeToRequestValidation(relationshipService);
-        RelationshipValidationAbstract changeFromRequestValidation = new ChangeFromRequestValidation(relationshipService);
-        changeToRequestValidation.setNext(changeFromRequestValidation);
-        RelationshipValidationAbstract deleteValidation = new DeleteValidation();
-        changeFromRequestValidation.setNext(deleteValidation);
+        RelationshipValidationAbstract requestedValidation = new RequestedValidation(relationshipService);
+        RelationshipValidationAbstract acceptedValidation = new AcceptedValidation(relationshipService);
+        requestedValidation.setNext(acceptedValidation);
 
-        relationship = changeToRequestValidation.nextRelationshipValidation(relationship, techRelationshipData);
+        RelationshipValidationAbstract deletedValidation = new DeletedValidation();
+        acceptedValidation.setNext(deletedValidation);
+
+        RelationshipValidationAbstract deniedValidation = new DeniedValidation();
+        deletedValidation.setNext(deniedValidation);
+
+        RelationshipValidationAbstract canceledValidation = new CanceledValidation();
+        deniedValidation.setNext(canceledValidation);
+
+        relationship = requestedValidation.nextRelationshipValidation(relationship, techRelationshipData);
 
         if (relationship.isValidated()) {
             return relationship;
