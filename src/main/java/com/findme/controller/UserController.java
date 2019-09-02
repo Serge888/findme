@@ -8,7 +8,6 @@ import com.findme.models.User;
 import com.findme.service.RelationshipService;
 import com.findme.service.UserService;
 import com.findme.util.UtilString;
-import com.findme.validation.RelationshipValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;

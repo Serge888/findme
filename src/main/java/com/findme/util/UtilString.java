@@ -1,7 +1,10 @@
 package com.findme.util;
 
 import com.findme.exception.BadRequestException;
-import com.findme.models.FriendRelationshipStatus;
+import lombok.NonNull;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class UtilString {
 
@@ -50,6 +53,19 @@ public class UtilString {
         } else {
             return null;
         }
+    }
+
+    public static List<Long> stringToLongList(@NonNull String string) {
+        String[] strArr = string.split(",");
+        List<Long> idList = new ArrayList<>();
+        for (String s : strArr) {
+            try {
+                idList.add(stringToLong(s));
+            } catch (BadRequestException e) {
+                e.getMessage();
+            }
+        }
+        return idList;
     }
 
 }

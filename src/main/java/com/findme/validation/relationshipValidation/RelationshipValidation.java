@@ -1,4 +1,4 @@
-package com.findme.validation;
+package com.findme.validation.relationshipValidation;
 
 import com.findme.models.Relationship;
 import com.findme.models.TechRelationshipData;

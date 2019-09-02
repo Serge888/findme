@@ -26,15 +26,7 @@
                     <br>
                     <div id="savedRequest"></div>
 
-                    <br>
-                    <form id="form-confirmRequest">
-                        <p>Update Relationship</p>
-                        My id:<br>
-                        <input type="text" name="userIdFrom" placeholder="User id from"><br>
-                        <input type="text" name="userIdTo" placeholder="User id to"><br>
-                        <input type="text" name="status" placeholder="status"><br>
-                        <button class="btnRed" type="submit">Change a request status</button>
-                    </form>
+
                     <br>
 <!--                    <div id="confirmRequest"></div>-->
 
@@ -51,6 +43,7 @@
 
             </div>
             <div class="right">
+                <div>
                 Styled text here
                 <p th:text="${user.firstName}"></p>
                 <p th:text="${user.lastName}"></p>
@@ -58,12 +51,26 @@
                 <p th:text="${user.country}"></p>
                 <p th:text="${user.city}"></p>
                 <p th:text="${user.age}"></p>
+                </div>
+                <div>
+                    <form id="form-postCreator">
+                        <input size="20" type="text" name="userPostedId" placeholder="Posted User id"><br>
+                        <input size="20" type="text" name="userPagePostedId" placeholder="Posted User page id"><br>
+                        <input size="100" type="text" name="message" placeholder="Post - 200 characters maximum"><br>
+                        <input size="20" type="text" name="location" placeholder="location"><br>
+                        <input size="100" type="text" name="usersTagged" placeholder="usersTagged"><br>
+                        <button class="btnRed" type="submit">post</button>
+                    </form>
+                </div>
+
+
             </div>
         </div>
 
 
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
         <script src="http://localhost:63342/findme/js/relationship.js"></script>
+        <script src="http://localhost:63342/findme/js/post.js"></script>
 
     </body>
 
