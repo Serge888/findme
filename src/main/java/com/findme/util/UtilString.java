@@ -68,4 +68,13 @@ public class UtilString {
         return idList;
     }
 
+    public static Boolean stringToBoolean(String string) throws BadRequestException {
+        try {
+            return Boolean.valueOf(string);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new BadRequestException("Can't convert it to Boolean. Please, check you request and try again.");
+        }
+    }
+
 }

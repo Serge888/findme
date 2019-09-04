@@ -62,6 +62,25 @@
                         <button class="btnRed" type="submit">post</button>
                     </form>
                 </div>
+                <div>
+                    <h2>Posts</h2>
+                    <form id="form-getPosts">
+                        <input size="20" type="text" name="userPageOwnerId" placeholder="user page owner id"><br>
+                        <input size="20" type="text" name="userPostId" placeholder="user post id"><br>
+                        <input size="100" type="text" name="friends" placeholder="friends - true of false"><br>
+                        <button class="btnRed" type="submit">Show posts</button>
+                    </form>
+                    <tr th:each="post : ${postList}">
+                        <p th:text="${post.id}"></p>
+                        <p th:text="${post.datePosted}"></p>
+                        <p th:text="${post.userPosted}"></p>
+                        <p th:text="${post.userPagePosted}"></p>
+                        <p th:text="${post.location}"></p>
+                        <p th:text="${post.usersTagged}"></p>
+                        <p th:text="${post.message}"></p>
+                        <br><br><br>
+                    </tr>
+                </div>
 
 
             </div>

@@ -4,6 +4,7 @@ import com.findme.exception.BadRequestException;
 import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
 import com.findme.models.Post;
+import com.findme.models.PostFilter;
 import com.findme.models.TechPostData;
 import com.findme.service.PostService;
 import com.findme.service.UserService;
@@ -12,9 +13,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 public class PostController {
@@ -43,6 +47,27 @@ public class PostController {
         return new ResponseEntity<>("Post was saved", HttpStatus.OK);
     }
 
+    @RequestMapping(method = RequestMethod.POST, value = "/findPostsByUserId", produces = "text/plain")
+    public ResponseEntity<List<Post>> findPostsByUserId(HttpSession session, Model model,
+                                                        @ModelAttribute PostFilter postFilter)
+            throws NotFoundException, InternalServerException {
+        List<Post> postList;
+        try {
+            String userId = (String) session.getAttribute("id");
+            userService.isUserLoggedIn(session, userId);
+            postFilter.setLoggedInUser(userId);
+            postList = postService.findPostsByUserId(postFilter);
+            model.addAttribute("postList", postList);
+        } catch (BadRequestException e) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        } catch (NotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (InternalServerException e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<>(postList, HttpStatus.OK);
+    }
+
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/delete-post", produces = "text/plain")
     public @ResponseBody
@@ -51,11 +76,5 @@ public class PostController {
         return "Post id " + post.getId() + " was deleted " + post;
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/findById-post/{postId}", produces = "text/plain")
-    public @ResponseBody
-    String findById(@PathVariable String postId) throws NotFoundException, InternalServerException {
-        Post post = postService.findById(UtilString.stringToLong(postId));
-        return "Post " + post.getId() + " was found: " + post;
-    }
 
 }

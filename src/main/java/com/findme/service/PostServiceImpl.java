@@ -2,9 +2,11 @@ package com.findme.service;
 
 
 import com.findme.dao.PostDao;
+import com.findme.exception.BadRequestException;
 import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
 import com.findme.models.Post;
+import com.findme.models.PostFilter;
 import com.findme.models.TechPostData;
 import com.findme.models.User;
 import com.findme.util.UtilString;
@@ -12,6 +14,7 @@ import com.findme.validation.postValidation.PostValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,6 +49,11 @@ public class PostServiceImpl implements PostService {
         return postDao.findById(id);
     }
 
+    @Override
+    public List<Post> findPostsByUserId(PostFilter postFilter) throws BadRequestException, InternalServerException {
+        return postDao.findPostsByUserId(postFilter);
+    }
+
     private Post postCreator(TechPostData techPostData) {
         Long userPostedIdL = UtilString.stringToLong(techPostData.getUserPostedId());
         Long userPagePostedIdL = UtilString.stringToLong(techPostData.getUserPagePostedId());
@@ -55,6 +63,7 @@ public class PostServiceImpl implements PostService {
         post.setUserPagePosted(userService.findById(userPagePostedIdL));
         post.setMessage(techPostData.getMessage());
         post.setLocation(techPostData.getLocation());
+        post.setDatePosted(LocalDate.now());
 
         List<Long> ids = UtilString.stringToLongList(techPostData.getUsersTagged());
         List<User> taggedUserList = new ArrayList<>();
