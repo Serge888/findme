@@ -18,5 +18,5 @@ public interface UserService {
     User findByEmailAddress(String emailAddress) throws NotFoundException, InternalServerException;
     User userLogin(String emailAddress, String password) throws NotFoundException, InternalServerException;
     void viewProfileValidation(HttpSession session, Long profileUserId, Relationship relationship) throws BadRequestException;
-    void isUserLoggedIn(HttpSession session, String userIdFrom) throws BadRequestException;
+    void isUserLoggedIn(HttpSession session, Long userIdFrom) throws BadRequestException;
 }

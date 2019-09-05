@@ -35,6 +35,7 @@ public class UserController {
         try {
             foundUser = userService.userLogin(emailAddress, password);
             session.setAttribute("id", foundUser.getId());
+            session.setAttribute("news", 0);
         } catch (BadRequestException  e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (NotFoundException e) {
@@ -50,6 +51,7 @@ public class UserController {
     public ResponseEntity logoutUser(HttpSession session) {
         if (session != null && !session.isNew()) {
             session.removeAttribute("id");
+            session.removeAttribute("news");
         } else {
             return new ResponseEntity<>("You were not logged iin.", HttpStatus.BAD_REQUEST);
         }

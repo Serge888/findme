@@ -13,8 +13,9 @@ import javax.persistence.Embeddable;
 @AllArgsConstructor
 @NoArgsConstructor
 public class PostFilter {
-    private String loggedInUser;
+    private Long loggedInUser;
     private String userPageOwnerId;
     private String userPostId;
     private String friends;
+    private Integer newsIndexFrom;
 }

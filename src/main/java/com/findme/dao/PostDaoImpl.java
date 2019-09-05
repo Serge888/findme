@@ -3,9 +3,12 @@ package com.findme.dao;
 import com.findme.exception.BadRequestException;
 import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
-import com.findme.models.*;
+import com.findme.models.FriendRelationshipStatus;
+import com.findme.models.Post;
+import com.findme.models.PostFilter;
 import com.findme.util.UtilString;
 import lombok.NonNull;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.client.HttpServerErrorException;
 
@@ -17,6 +20,9 @@ import java.util.List;
 @Transactional
 @Repository
 public class PostDaoImpl extends GeneralDao<Post> implements PostDao {
+    @Value("${maxPostsAsNews:10}")
+    private Integer maxPostsAsNews;
+
     private String getAllPastsHql = "select p from Post p left join Relationship r " +
             "on (r.userFrom.id = p.userPosted.id and r.userTo.id = :userId) " +
             "or (r.userTo.id = p.userPosted.id and r.userFrom.id = :userId) " +
@@ -58,13 +64,10 @@ public class PostDaoImpl extends GeneralDao<Post> implements PostDao {
             throws BadRequestException, InternalServerException {
         List<Post> postList = new ArrayList<>();
         try {
-            Long loggedInUserId = UtilString.stringToLong(postFilter.getLoggedInUser());
-
-
             // показывать посты друзей
             if (postFilter.getFriends() != null && !"".equals(postFilter.getFriends())) {
                 postList.addAll(entityManager.createQuery(getFriendsPostsHql, Post.class)
-                        .setParameter("userId", loggedInUserId)
+                        .setParameter("userId", postFilter.getLoggedInUser())
                         .setParameter("relationshipStatus", FriendRelationshipStatus.ACCEPTED)
                         .getResultList());
             }
@@ -88,7 +91,7 @@ public class PostDaoImpl extends GeneralDao<Post> implements PostDao {
                     && (postFilter.getUserPageOwnerId() == null || "".equals(postFilter.getUserPageOwnerId()))
                     && (postFilter.getUserPostId() == null || "".equals(postFilter.getUserPostId()))) {
                 postList = entityManager.createQuery(getAllPastsHql, Post.class)
-                        .setParameter("userId", loggedInUserId)
+                        .setParameter("userId", postFilter.getLoggedInUser())
                         .setParameter("relationshipStatus", FriendRelationshipStatus.ACCEPTED)
                         .getResultList();
             }
@@ -99,6 +102,29 @@ public class PostDaoImpl extends GeneralDao<Post> implements PostDao {
             throw new InternalServerException("Something went wrong with findPostsByUserId userId = "
                     + postFilter.getLoggedInUser());
         }
+        return postList;
+    }
+
+
+    // for news limit 20 pcs
+    @Override
+    public List<Post> getPostsAsNews(PostFilter postFilter) {
+        List<Post> postList;
+        try {
+            postList = new ArrayList<>(entityManager.createQuery(getFriendsPostsHql, Post.class)
+                    .setParameter("userId", postFilter.getLoggedInUser())
+                    .setParameter("relationshipStatus", FriendRelationshipStatus.ACCEPTED)
+                    .setFirstResult(postFilter.getNewsIndexFrom())
+                    .setMaxResults(maxPostsAsNews)
+                    .getResultList());
+        } catch (NoResultException e) {
+            System.out.println(e.getMessage());
+            return null;
+        } catch (HttpServerErrorException.InternalServerError e) {
+            throw new InternalServerException("Something went wrong with findPostsByUserId userId = "
+                    + postFilter.getLoggedInUser());
+        }
+
         return postList;
     }
 }

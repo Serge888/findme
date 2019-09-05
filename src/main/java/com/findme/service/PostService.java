@@ -15,4 +15,5 @@ public interface PostService {
     Post delete(Post post) throws InternalServerException;
     Post findById(Long id) throws InternalServerException, NotFoundException;
     List<Post> findPostsByUserId(PostFilter postFilter) throws BadRequestException, InternalServerException;
+    List<Post> getPostsAsNews(PostFilter postFilter) throws BadRequestException, InternalServerException;
 }

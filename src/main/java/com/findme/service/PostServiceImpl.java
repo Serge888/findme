@@ -54,6 +54,11 @@ public class PostServiceImpl implements PostService {
         return postDao.findPostsByUserId(postFilter);
     }
 
+    @Override
+    public List<Post> getPostsAsNews(PostFilter postFilter) throws BadRequestException, InternalServerException {
+        return postDao.getPostsAsNews(postFilter);
+    }
+
     private Post postCreator(TechPostData techPostData) {
         Long userPostedIdL = UtilString.stringToLong(techPostData.getUserPostedId());
         Long userPagePostedIdL = UtilString.stringToLong(techPostData.getUserPagePostedId());

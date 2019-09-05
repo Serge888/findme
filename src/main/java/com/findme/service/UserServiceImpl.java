@@ -118,8 +118,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void isUserLoggedIn(HttpSession session, String userIdFrom) throws BadRequestException {
-        if (session.getAttribute("id") != UtilString.stringToLong(userIdFrom)) {
+    public void isUserLoggedIn(HttpSession session, Long userIdFrom) throws BadRequestException {
+        if (session.getAttribute("id") != userIdFrom) {
             throw new BadRequestException("First you should login.");
         }
     }

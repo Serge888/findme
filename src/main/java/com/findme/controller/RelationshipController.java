@@ -35,7 +35,7 @@ public class RelationshipController {
         try {
             Long userIdFromL = UtilString.stringToLong(userIdFrom);
             Long userIdToL = UtilString.stringToLong(userIdTo);
-            userService.isUserLoggedIn(session, userIdFrom);
+            userService.isUserLoggedIn(session, userIdFromL);
             relationshipService.save(userIdFromL, userIdToL);
         }  catch (BadRequestException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -58,7 +58,7 @@ public class RelationshipController {
             Long userIdFromL = UtilString.stringToLong(userIdFrom);
             Long userIdToL = UtilString.stringToLong(userIdTo);
             FriendRelationshipStatus friendRelationshipStatus = FriendRelationshipStatus.valueOf(status);
-            userService.isUserLoggedIn(session, userIdFrom);
+            userService.isUserLoggedIn(session, userIdFromL);
             relationshipService.update(userIdFromL, userIdToL, friendRelationshipStatus);
         } catch (BadRequestException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -76,7 +76,7 @@ public class RelationshipController {
     public ResponseEntity<List<Relationship>> getIncomeRequests(HttpSession session, @PathVariable String userId) {
         List<Relationship> relationshipList;
         try {
-            userService.isUserLoggedIn(session, userId);
+            userService.isUserLoggedIn(session, UtilString.stringToLong(userId));
             relationshipList =
                     new ArrayList<>(relationshipService.findByUserToId(UtilString.stringToLong(userId)));
 
@@ -97,7 +97,7 @@ public class RelationshipController {
         List<Relationship> relationshipList;
 
         try {
-            userService.isUserLoggedIn(session, userId);
+            userService.isUserLoggedIn(session, UtilString.stringToLong(userId));
             relationshipList =
                     new ArrayList<>(relationshipService.findByUserFromId(UtilString.stringToLong(userId)));
         } catch (BadRequestException e) {
@@ -117,7 +117,7 @@ public class RelationshipController {
         Long userIdFromL = UtilString.stringToLong(userIdFrom);
         Long userIdToL = UtilString.stringToLong(userIdTo);
         try {
-            userService.isUserLoggedIn(session, userIdFrom);
+            userService.isUserLoggedIn(session, userIdFromL);
             relationship = relationshipService.findByIdFromAndIdTo(userIdFromL, userIdToL);
         }  catch (BadRequestException e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
