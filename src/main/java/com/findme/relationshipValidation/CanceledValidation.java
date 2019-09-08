@@ -1,4 +1,4 @@
-package com.findme.validation.relationshipValidation;
+package com.findme.relationshipValidation;
 
 import com.findme.exception.BadRequestException;
 import com.findme.models.FriendRelationshipStatus;
@@ -7,15 +7,14 @@ import com.findme.models.TechRelationshipData;
 import org.springframework.stereotype.Component;
 
 @Component
-public class DeniedValidation extends RelationshipValidationAbstract {
+public class CanceledValidation extends RelationshipValidationAbstract {
 
 
     @Override
     Relationship validation(Relationship relationship, TechRelationshipData techRelationshipData) throws BadRequestException {
-
         if (!FriendRelationshipStatus.REQUESTED.equals(relationship.getFriendRelationshipStatus())
-                || !relationship.getUserFrom().equals(techRelationshipData.getUserTo())
-                || !FriendRelationshipStatus.DENIED.equals(techRelationshipData.getNewStatus())) {
+                || !relationship.getUserFrom().equals(techRelationshipData.getUserFrom())
+                || !FriendRelationshipStatus.CANCELED.equals(techRelationshipData.getNewStatus())) {
             return relationship;
         }
 

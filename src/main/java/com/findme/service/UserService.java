@@ -7,6 +7,7 @@ import com.findme.models.Relationship;
 import com.findme.models.User;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 public interface UserService {
 
@@ -19,4 +20,5 @@ public interface UserService {
     User userLogin(String emailAddress, String password) throws NotFoundException, InternalServerException;
     void viewProfileValidation(HttpSession session, Long profileUserId, Relationship relationship) throws BadRequestException;
     void isUserLoggedIn(HttpSession session, Long userIdFrom) throws BadRequestException;
+    List<User> findTaggedUsers(Long userPostedId, List<Long> usersTaggedIdList) throws InternalServerException;
 }

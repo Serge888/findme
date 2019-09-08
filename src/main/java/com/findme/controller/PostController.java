@@ -6,6 +6,7 @@ import com.findme.exception.NotFoundException;
 import com.findme.models.Post;
 import com.findme.models.PostFilter;
 import com.findme.models.TechPostData;
+import com.findme.models.User;
 import com.findme.service.PostService;
 import com.findme.service.UserService;
 import com.findme.util.UtilString;
@@ -36,8 +37,9 @@ public class PostController {
     @RequestMapping(method = RequestMethod.POST, value = "/save-post", produces = "text/plain")
     public ResponseEntity save(HttpSession session, @ModelAttribute TechPostData techPostData) {
         try {
-            Long userPostedId = UtilString.stringToLong(techPostData.getUserPostedId());
-            userService.isUserLoggedIn(session, userPostedId);
+            User userLoggedIn = (User) session.getAttribute("user");
+            techPostData.setUserPosted(userLoggedIn);
+            userService.isUserLoggedIn(session, userLoggedIn.getId());
             postService.save(techPostData);
 
         } catch (BadRequestException e) {
@@ -56,9 +58,9 @@ public class PostController {
             throws NotFoundException, InternalServerException {
         List<Post> postList;
         try {
-            Long userId = (Long) session.getAttribute("id");
-            userService.isUserLoggedIn(session, userId);
-            postFilter.setLoggedInUser(userId);
+            User userLoggedIn = (User) session.getAttribute("user");
+            userService.isUserLoggedIn(session, userLoggedIn.getId());
+            postFilter.setLoggedInUser(userLoggedIn.getId());
             postList = postService.findPostsByUserId(postFilter);
             model.addAttribute("postList", postList);
         } catch (BadRequestException e) {
@@ -77,12 +79,12 @@ public class PostController {
             throws NotFoundException, InternalServerException {
         List<Post> postList;
         try {
-            Long userId = (Long) session.getAttribute("id");
+            User userLoggedIn = (User) session.getAttribute("user");
             Integer newsIndexFrom = (Integer) session.getAttribute("news");
-            userService.isUserLoggedIn(session, userId);
+            userService.isUserLoggedIn(session, userLoggedIn.getId());
 
             PostFilter postFilter = new PostFilter();
-            postFilter.setLoggedInUser(userId);
+            postFilter.setLoggedInUser(userLoggedIn.getId());
             postFilter.setFriends("true");
             postFilter.setNewsIndexFrom(newsIndexFrom);
 

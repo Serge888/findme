@@ -5,36 +5,34 @@ import com.findme.dao.PostDao;
 import com.findme.exception.BadRequestException;
 import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
-import com.findme.models.Post;
-import com.findme.models.PostFilter;
-import com.findme.models.TechPostData;
-import com.findme.models.User;
+import com.findme.models.*;
 import com.findme.util.UtilString;
-import com.findme.validation.postValidation.PostValidation;
+import lombok.NonNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 @Service
 public class PostServiceImpl implements PostService {
     private final PostDao postDao;
-    private PostValidation postValidation;
     private UserService userService;
+    private RelationshipService relationshipService;
 
     @Autowired
-    public PostServiceImpl(PostDao postDao, PostValidation postValidation, UserService userService) {
+    public PostServiceImpl(PostDao postDao, UserService userService,
+                           RelationshipService relationshipService) {
         this.postDao = postDao;
-        this.postValidation = postValidation;
         this.userService = userService;
+        this.relationshipService = relationshipService;
     }
 
     @Override
     public Post save(TechPostData techPostData) throws InternalServerException {
         Post post = postCreator(techPostData);
-        postValidation.postValidation(post);
+        postLengthValidation(post);
+        postPageValidation(post);
         return postDao.save(post);
     }
 
@@ -59,25 +57,50 @@ public class PostServiceImpl implements PostService {
         return postDao.getPostsAsNews(postFilter);
     }
 
-    private Post postCreator(TechPostData techPostData) {
-        Long userPostedIdL = UtilString.stringToLong(techPostData.getUserPostedId());
-        Long userPagePostedIdL = UtilString.stringToLong(techPostData.getUserPagePostedId());
+    @Override
+    public void postLengthValidation(@NonNull Post post) throws BadRequestException {
+        if (post.getMessage() != null && post.getMessage().length() <= 200) {
+            return;
+        }
+        throw new BadRequestException("Post can't be null or more than 200 characters");
+    }
 
+
+    @Override
+    public void postPageValidation(@NonNull Post post) throws BadRequestException {
+        if (post.getUserPagePosted() == null) {
+            throw new BadRequestException("UserPagePosted can't be null.");
+        }
+        if (post.getUserPosted().equals(post.getUserPagePosted())) {
+            return;
+        }
+        List<Relationship> relationshipList =
+                relationshipService.findByUserIdAndStatesRelationship(post.getUserPosted().getId(),
+                FriendRelationshipStatus.ACCEPTED);
+
+        if (relationshipList != null && relationshipList.size() > 0) {
+            for (Relationship relationship : relationshipList) {
+                if (post.getUserPagePosted().equals(relationship.getUserFrom())
+                        || post.getUserPagePosted().equals(relationship.getUserTo())) {
+                    return;
+                }
+            }
+        }
+
+        throw new BadRequestException("You can create post on your or your friends' pages.");
+    }
+
+    private Post postCreator(TechPostData techPostData) {
+        Long userPagePostedIdL = UtilString.stringToLong(techPostData.getUserPagePostedId());
         Post post = new Post();
-        post.setUserPosted(userService.findById(userPostedIdL));
+        post.setUserPosted(techPostData.getUserPosted());
         post.setUserPagePosted(userService.findById(userPagePostedIdL));
         post.setMessage(techPostData.getMessage());
         post.setLocation(techPostData.getLocation());
         post.setDatePosted(LocalDate.now());
 
         List<Long> ids = UtilString.stringToLongList(techPostData.getUsersTagged());
-        List<User> taggedUserList = new ArrayList<>();
-        for (Long id : ids) {
-            User user = userService.findById(id);
-            if (user != null) {
-                taggedUserList.add(user);
-            }
-        }
+        List<User> taggedUserList = userService.findTaggedUsers(techPostData.getUserPosted().getId(), ids);
         post.setUsersTagged(taggedUserList);
         return post;
     }

@@ -34,7 +34,7 @@ public class UserController {
        User foundUser;
         try {
             foundUser = userService.userLogin(emailAddress, password);
-            session.setAttribute("id", foundUser.getId());
+            session.setAttribute("user", foundUser);
             session.setAttribute("news", 0);
         } catch (BadRequestException  e) {
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
@@ -50,7 +50,7 @@ public class UserController {
     @RequestMapping(method = RequestMethod.GET, value = "/logout")
     public ResponseEntity logoutUser(HttpSession session) {
         if (session != null && !session.isNew()) {
-            session.removeAttribute("id");
+            session.removeAttribute("user");
             session.removeAttribute("news");
         } else {
             return new ResponseEntity<>("You were not logged iin.", HttpStatus.BAD_REQUEST);
@@ -86,8 +86,8 @@ public class UserController {
     @RequestMapping(method = RequestMethod.GET, path = "/user/{userId}")
     public String home(HttpSession session, Model model, @PathVariable String  userId) {
         Long profileUserId = UtilString.stringToLong(userId);
-        Long loggedInUserId = (Long) session.getAttribute("id");
-        Relationship relationship = relationshipService.findByIds(loggedInUserId, profileUserId);
+        User loggedInUser = (User) session.getAttribute("user");
+        Relationship relationship = relationshipService.findByIds(loggedInUser.getId(), profileUserId);
         userService.viewProfileValidation(session, profileUserId, relationship);
         User user;
         user = userService.findById(profileUserId);

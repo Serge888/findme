@@ -20,7 +20,7 @@ import java.util.List;
 @Transactional
 @Repository
 public class PostDaoImpl extends GeneralDao<Post> implements PostDao {
-    @Value("${maxPostsAsNews:10}")
+    @Value("${maxPostsAsNews:20}")
     private Integer maxPostsAsNews;
 
     private String getAllPastsHql = "select p from Post p left join Relationship r " +

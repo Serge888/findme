@@ -8,7 +8,7 @@ import com.findme.models.FriendRelationshipStatus;
 import com.findme.models.Relationship;
 import com.findme.models.TechRelationshipData;
 import com.findme.models.User;
-import com.findme.validation.relationshipValidation.RelationshipValidation;
+import com.findme.relationshipValidation.RelationshipValidation;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;

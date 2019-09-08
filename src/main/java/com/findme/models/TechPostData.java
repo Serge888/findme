@@ -15,7 +15,7 @@ import javax.persistence.Embeddable;
 public class TechPostData {
     private String message;
     private String location;
-    private String userPostedId;
+    private User userPosted;
     private String userPagePostedId;
     private String usersTagged;
 }

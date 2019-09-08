@@ -6,6 +6,7 @@ import com.findme.exception.NotFoundException;
 import com.findme.models.Post;
 import com.findme.models.PostFilter;
 import com.findme.models.TechPostData;
+import lombok.NonNull;
 
 import java.util.List;
 
@@ -16,4 +17,6 @@ public interface PostService {
     Post findById(Long id) throws InternalServerException, NotFoundException;
     List<Post> findPostsByUserId(PostFilter postFilter) throws BadRequestException, InternalServerException;
     List<Post> getPostsAsNews(PostFilter postFilter) throws BadRequestException, InternalServerException;
+    void postLengthValidation(@NonNull Post post) throws BadRequestException;
+    void postPageValidation(@NonNull Post post) throws BadRequestException;
 }

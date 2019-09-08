@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpSession;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class UserServiceImpl implements UserService {
@@ -106,22 +107,29 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void viewProfileValidation(HttpSession session, Long profileUserId, Relationship relationship) throws BadRequestException {
-        if (session.getAttribute("id") == null) {
+        if (session.getAttribute("user") == null) {
             throw new BadRequestException("First you should login.");
         }
-        Long loggedInUserId = UtilString.stringToLong(session.getAttribute("id").toString());
-        if ((relationship == null && !loggedInUserId.equals(profileUserId))
-                || (!loggedInUserId.equals(profileUserId)
+        User loggedInUser = (User) session.getAttribute("user");
+        if ((relationship == null && !loggedInUser.getId().equals(profileUserId))
+                || (!loggedInUser.getId().equals(profileUserId)
+                && relationship != null
                 && !FriendRelationshipStatus.ACCEPTED.equals(relationship.getFriendRelationshipStatus()))) {
             throw new BadRequestException("You can view your profile or your friends only.");
         }
     }
 
     @Override
-    public void isUserLoggedIn(HttpSession session, Long userIdFrom) throws BadRequestException {
-        if (session.getAttribute("id") != userIdFrom) {
+    public void isUserLoggedIn(HttpSession session, Long actionUserIdFrom ) throws BadRequestException {
+        User userLoggedIn = (User) session.getAttribute("user");
+        if (userLoggedIn == null ||  !userLoggedIn.getId().equals(actionUserIdFrom )) {
             throw new BadRequestException("First you should login.");
         }
+    }
+
+    @Override
+    public List<User> findTaggedUsers(Long userPostedId, List<Long> usersTaggedIdList) throws InternalServerException {
+        return userDao.findTaggedUsers(userPostedId, usersTaggedIdList);
     }
 
 

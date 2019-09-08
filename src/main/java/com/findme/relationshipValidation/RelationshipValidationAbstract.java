@@ -1,4 +1,4 @@
-package com.findme.validation.relationshipValidation;
+package com.findme.relationshipValidation;
 
 import com.findme.exception.BadRequestException;
 import com.findme.models.Relationship;
