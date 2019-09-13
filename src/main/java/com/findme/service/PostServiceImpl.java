@@ -30,10 +30,12 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public Post save(TechPostData techPostData) throws InternalServerException {
-        Post post = postCreator(techPostData);
-        postLengthValidation(post);
-        postPageValidation(post);
-        return postDao.save(post);
+        if (techPostData.getMessage() == null || techPostData.getMessage().length() > 200) {
+            throw new BadRequestException("Post can't be null or more than 200 characters");
+        }
+        Long userPagePostedIdL = UtilString.stringToLong(techPostData.getUserPagePostedId());
+        postPageValidation(techPostData, userPagePostedIdL);
+        return postDao.save(postCreator(techPostData, userPagePostedIdL));
     }
 
 
@@ -57,41 +59,27 @@ public class PostServiceImpl implements PostService {
         return postDao.getPostsAsNews(postFilter);
     }
 
-    @Override
-    public void postLengthValidation(@NonNull Post post) throws BadRequestException {
-        if (post.getMessage() != null && post.getMessage().length() <= 200) {
-            return;
-        }
-        throw new BadRequestException("Post can't be null or more than 200 characters");
-    }
 
-
-    @Override
-    public void postPageValidation(@NonNull Post post) throws BadRequestException {
-        if (post.getUserPagePosted() == null) {
+    private void postPageValidation(@NonNull TechPostData techPostData, Long userPagePostedIdL)
+            throws BadRequestException {
+        if (techPostData.getUserPagePostedId() == null) {
             throw new BadRequestException("UserPagePosted can't be null.");
         }
-        if (post.getUserPosted().equals(post.getUserPagePosted())) {
+        if (techPostData.getUserPosted().getId().equals(userPagePostedIdL)) {
             return;
         }
-        List<Relationship> relationshipList =
-                relationshipService.findByUserIdAndStatesRelationship(post.getUserPosted().getId(),
-                FriendRelationshipStatus.ACCEPTED);
+        Relationship relationship = relationshipService.findByIds(techPostData.getUserPosted().getId(),
+                userPagePostedIdL);
 
-        if (relationshipList != null && relationshipList.size() > 0) {
-            for (Relationship relationship : relationshipList) {
-                if (post.getUserPagePosted().equals(relationship.getUserFrom())
-                        || post.getUserPagePosted().equals(relationship.getUserTo())) {
-                    return;
-                }
-            }
+        if (relationship != null
+                && FriendRelationshipStatus.ACCEPTED.equals(relationship.getFriendRelationshipStatus())) {
+            return;
         }
 
         throw new BadRequestException("You can create post on your or your friends' pages.");
     }
 
-    private Post postCreator(TechPostData techPostData) {
-        Long userPagePostedIdL = UtilString.stringToLong(techPostData.getUserPagePostedId());
+    private Post postCreator(TechPostData techPostData, Long userPagePostedIdL) {
         Post post = new Post();
         post.setUserPosted(techPostData.getUserPosted());
         post.setUserPagePosted(userService.findById(userPagePostedIdL));

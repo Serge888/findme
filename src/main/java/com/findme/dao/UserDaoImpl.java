@@ -18,6 +18,11 @@ import java.util.List;
 public class UserDaoImpl extends GeneralDao<User> implements UserDao {
     private String findByPhoneHql = "select u from User u where u.phone = :phoneNumber";
     private String findByEmailAddressHql = "select u from User u where u.emailAddress = :emailAddress";
+    private String findTaggedUsersHql = "select u from User u left join Relationship r"
+            + " on (r.userFrom.id = u.id) or (r.userTo.id = u.id)"
+            + " where r.friendRelationshipStatus =  :friendRelationshipStatus"
+            + " and u.id in (:usersTaggedIdList)"
+            + " and (r.userFrom.id = :userPostedId or r.userTo.id = :userPostedId)";
 
 
     @Override
@@ -57,6 +62,7 @@ public class UserDaoImpl extends GeneralDao<User> implements UserDao {
         try {
             user = entityManager.createQuery(findByEmailAddressHql, User.class)
                     .setParameter("emailAddress", emailAddress)
+
                     .getSingleResult();
         } catch (NoResultException ex) {
             user = null;
@@ -70,29 +76,15 @@ public class UserDaoImpl extends GeneralDao<User> implements UserDao {
     @Override
     public List<User> findTaggedUsers(Long userPostedId, List<Long> usersTaggedIdList) throws InternalServerException {
         try {
-            CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-            CriteriaQuery<User> criteriaQuery = builder.createQuery(User.class);
-            Root<User> rootUser = criteriaQuery.from(User.class);
-            Root<Relationship> rootRelationship = criteriaQuery.from(Relationship.class);
-            Predicate predicate = builder.conjunction();
-            Expression<String> expression = rootUser.get("id");
+            return entityManager.createQuery(findTaggedUsersHql, User.class)
+                    .setParameter("friendRelationshipStatus", FriendRelationshipStatus.ACCEPTED)
+                    .setParameter("usersTaggedIdList", usersTaggedIdList)
+                    .setParameter("userPostedId", userPostedId)
+                    .getResultList();
 
-            predicate = builder.and(predicate, builder.or(
-                    builder.equal(rootUser.get("id"), rootRelationship.get("userFrom").get("id")),
-                    builder.equal(rootUser.get("id"), rootRelationship.get("userTo").get("id"))));
-            predicate = builder.and(predicate, builder.or(
-                    builder.equal(rootRelationship.get("userFrom").get("id"), userPostedId),
-                    builder.equal(rootRelationship.get("userTo").get("id"), userPostedId)));
-
-            predicate = builder.and(predicate, builder.equal(rootRelationship.get("friendRelationshipStatus"),
-                    FriendRelationshipStatus.ACCEPTED));
-
-            predicate = builder.and(predicate, expression.in(usersTaggedIdList));
-
-            criteriaQuery.select(rootUser).where(predicate);
-
-            return entityManager.createQuery(criteriaQuery).getResultList();
-        } catch (Exception e) {
+        } catch (NoResultException ex) {
+            return null;
+        } catch (HttpServerErrorException.InternalServerError e) {
             e.printStackTrace();
             throw new InternalServerException("Something wrong with findTaggedUsers method.");
         }
