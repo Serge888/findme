@@ -8,6 +8,7 @@ import com.findme.models.Relationship;
 import com.findme.service.RelationshipService;
 import com.findme.service.UserService;
 import com.findme.util.UtilString;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,10 +17,12 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Controller
 public class RelationshipController {
+    private static final Logger logger = Logger.getLogger(RelationshipController.class);
     private RelationshipService relationshipService;
     private UserService userService;
 
@@ -38,12 +41,16 @@ public class RelationshipController {
             userService.isUserLoggedIn(session, userIdFromL);
             relationshipService.save(userIdFromL, userIdToL);
         }  catch (BadRequestException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (NotFoundException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (InternalServerException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        logger.info("Request from user id " + userIdFrom + " to user id " + userIdTo + " was sent.");
         return new ResponseEntity<>("Your request to user id " + userIdTo + " was sent.",
                 HttpStatus.OK);
     }
@@ -61,12 +68,16 @@ public class RelationshipController {
             userService.isUserLoggedIn(session, userIdFromL);
             relationshipService.update(userIdFromL, userIdToL, friendRelationshipStatus);
         } catch (BadRequestException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (NotFoundException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (InternalServerException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        logger.info("Currently status between user id " + userIdTo + " and user id " + userIdFrom + " is " + status);
         return new ResponseEntity<>("Your currently status with user id " + userIdTo + " is "
                 + status, HttpStatus.OK);
     }
@@ -81,10 +92,13 @@ public class RelationshipController {
                     new ArrayList<>(relationshipService.findByUserToId(UtilString.stringToLong(userId)));
 
         } catch (BadRequestException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (NotFoundException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (InternalServerException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(relationshipList, HttpStatus.OK);
@@ -101,10 +115,13 @@ public class RelationshipController {
             relationshipList =
                     new ArrayList<>(relationshipService.findByUserFromId(UtilString.stringToLong(userId)));
         } catch (BadRequestException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (NotFoundException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (InternalServerException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(relationshipList, HttpStatus.OK);
@@ -120,10 +137,13 @@ public class RelationshipController {
             userService.isUserLoggedIn(session, userIdFromL);
             relationship = relationshipService.findByIdFromAndIdTo(userIdFromL, userIdToL);
         }  catch (BadRequestException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (NotFoundException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (InternalServerException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>("Your relationship status is "

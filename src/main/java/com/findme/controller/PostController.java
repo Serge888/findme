@@ -9,7 +9,7 @@ import com.findme.models.TechPostData;
 import com.findme.models.User;
 import com.findme.service.PostService;
 import com.findme.service.UserService;
-import com.findme.util.UtilString;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -19,10 +19,12 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.Arrays;
 import java.util.List;
 
 @Controller
 public class PostController {
+    private static final Logger logger = Logger.getLogger(PostController.class);
     private PostService postService;
     private UserService userService;
     @Value("${maxPostsAsNews:10}")
@@ -43,12 +45,16 @@ public class PostController {
             postService.save(techPostData);
 
         } catch (BadRequestException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (NotFoundException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (InternalServerException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        logger.info("Post was added.");
         return new ResponseEntity<>("Post was saved", HttpStatus.OK);
     }
 
@@ -64,10 +70,13 @@ public class PostController {
             postList = postService.findPostsByUserId(postFilter);
             model.addAttribute("postList", postList);
         } catch (BadRequestException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (NotFoundException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (InternalServerException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(postList, HttpStatus.OK);
@@ -95,10 +104,13 @@ public class PostController {
             session.setAttribute("news", newsIndexFrom);
 
         } catch (BadRequestException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         } catch (NotFoundException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         } catch (InternalServerException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(postList, HttpStatus.OK);
@@ -110,6 +122,7 @@ public class PostController {
     public @ResponseBody
     String delete(@RequestBody Post post) {
         postService.delete(post);
+        logger.info("Post id " + post.getId() + " was deleted " + post);
         return "Post id " + post.getId() + " was deleted " + post;
     }
 

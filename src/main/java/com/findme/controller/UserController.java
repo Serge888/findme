@@ -8,6 +8,7 @@ import com.findme.models.User;
 import com.findme.service.RelationshipService;
 import com.findme.service.UserService;
 import com.findme.util.UtilString;
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +17,11 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.Arrays;
 
 @Controller
 public class UserController {
+    private static final Logger logger = Logger.getLogger(UserController.class);
     private UserService userService;
     private RelationshipService relationshipService;
 
@@ -37,24 +40,31 @@ public class UserController {
             session.setAttribute("user", foundUser);
             session.setAttribute("news", 0);
         } catch (BadRequestException  e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (NotFoundException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (InternalServerException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        logger.info("User id " + foundUser.getId() + " was logged in");
         return new ResponseEntity<>(HttpStatus.OK);
    }
 
 
     @RequestMapping(method = RequestMethod.GET, value = "/logout")
     public ResponseEntity logoutUser(HttpSession session) {
+        User user;
         if (session != null && !session.isNew()) {
+            user = (User) session.getAttribute("user");
             session.removeAttribute("user");
             session.removeAttribute("news");
         } else {
-            return new ResponseEntity<>("You were not logged iin.", HttpStatus.BAD_REQUEST);
+            return new ResponseEntity<>("You were not logged in.", HttpStatus.BAD_REQUEST);
         }
+        logger.info("User id " + user.getId() + " was logged out");
         return new ResponseEntity<>("Hope see you soon.", HttpStatus.OK);
     }
 
@@ -64,15 +74,19 @@ public class UserController {
         try {
             userService.save(user);
         } catch (BadRequestException  e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>("User " + user.getFirstName() + " was not registered. " +
                     e.getMessage(), HttpStatus.BAD_REQUEST);
         } catch (NotFoundException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>("User " + user.getFirstName() + " was not registered. " +
                     e.getMessage(), HttpStatus.NOT_FOUND);
         } catch (InternalServerException e) {
+            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
             return new ResponseEntity<>("User " + user.getFirstName() + " was not registered. " +
                     e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        logger.info("User " + user.getFirstName() + " " + user.getLastName() + " was registered.");
         return new ResponseEntity<>("User " + user.getFirstName() + " was registered.", HttpStatus.OK);
    }
 
@@ -96,14 +110,6 @@ public class UserController {
     }
 
 
-    @RequestMapping(method = RequestMethod.POST, value = "/save-user", produces = "text/plain")
-    public @ResponseBody
-    String save(@RequestBody User user) {
-        userService.save(user);
-        return "User id " + user.getId() + " was saved";
-    }
-
-
     @RequestMapping(method = RequestMethod.PUT, value = "/update-user", produces = "text/plain")
     public @ResponseBody
     String update(@RequestBody User newUser) {
@@ -112,6 +118,7 @@ public class UserController {
         if (user == null) {
             throw new NotFoundException("User id " + id + " was not found");
         }
+        logger.info("User " + user.getFirstName() + " " + user.getLastName() + "was updated");
         return "User id " + user.getId() + " was updated " + user;
     }
 
@@ -120,6 +127,7 @@ public class UserController {
     public @ResponseBody
     String delete(@RequestBody User user) {
         userService.delete(user);
+        logger.info("User " + user.getFirstName() + " " + user.getLastName() + "was deleted");
         return "User id " + user.getId() + " was deleted " + user;
     }
 
