@@ -16,10 +16,7 @@ public class GlobalExceptionHandler {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(BadRequestException.class)
     public ModelAndView handlerBadRequestException(Exception e) {
-        System.err.println("BadRequestException handler executed.");
-        System.err.println(e.getMessage());
-        System.err.println(Arrays.toString(e.getStackTrace()));
-        logger.error("BadRequestException handler executed.");
+        logger.error("BadRequestException handler executed." + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
         ModelAndView modelAndView = new ModelAndView("400");
         modelAndView.addObject("exception", e.getMessage());
         return modelAndView;
@@ -29,10 +26,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(InternalServerException.class)
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ModelAndView handlerInternalServerException(Exception e) {
-        System.err.println("InternalServerException handler executed.");
-        System.err.println(e.getMessage());
-        System.err.println(Arrays.toString(e.getStackTrace()));
-        logger.error("InternalServerException handler executed.");
+        logger.error("InternalServerException handler executed." + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
         ModelAndView modelAndView = new ModelAndView("500");
         modelAndView.addObject("exception", e.getMessage());
         return modelAndView;
@@ -42,10 +36,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(NotFoundException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ModelAndView handlerNotFoundException(Exception e) {
-        System.err.println("NotFoundException handler executed.");
-        System.err.println(e.getMessage());
-        System.err.println(Arrays.toString(e.getStackTrace()));
-        logger.error("NotFoundException handler executed.");
+        logger.error("NotFoundException handler executed." + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
         ModelAndView modelAndView = new ModelAndView("404");
         modelAndView.addObject("exception", e.getMessage());
         return modelAndView;
@@ -56,10 +47,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(AccessForbiddenException.class)
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ModelAndView handlerAccessForbiddenException(Exception e) {
-        System.err.println("AccessForbiddenException handler executed.");
-        System.err.println(e.getMessage());
-        System.err.println(Arrays.toString(e.getStackTrace()));
-        logger.error("AccessForbiddenException handler executed.");
+        logger.error("AccessForbiddenException handler executed."  + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
         ModelAndView modelAndView = new ModelAndView("403");
         modelAndView.addObject("exception", e.getMessage());
         return modelAndView;

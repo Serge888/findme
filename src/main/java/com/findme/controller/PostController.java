@@ -1,6 +1,5 @@
 package com.findme.controller;
 
-import com.findme.exception.BadRequestException;
 import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
 import com.findme.models.Post;
@@ -19,7 +18,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import java.util.Arrays;
 import java.util.List;
 
 @Controller
@@ -38,22 +36,10 @@ public class PostController {
 
     @RequestMapping(method = RequestMethod.POST, value = "/save-post", produces = "text/plain")
     public ResponseEntity save(HttpSession session, @ModelAttribute TechPostData techPostData) {
-        try {
-            User userLoggedIn = (User) session.getAttribute("user");
-            techPostData.setUserPosted(userLoggedIn);
-            userService.isUserLoggedIn(session, userLoggedIn.getId());
-            postService.save(techPostData);
-
-        } catch (BadRequestException e) {
-            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (NotFoundException e) {
-            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (InternalServerException e) {
-            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        User userLoggedIn = (User) session.getAttribute("user");
+        techPostData.setUserPosted(userLoggedIn);
+        userService.isUserLoggedIn(session, userLoggedIn.getId());
+        postService.save(techPostData);
         logger.info("Post was added.");
         return new ResponseEntity<>("Post was saved", HttpStatus.OK);
     }
@@ -62,23 +48,12 @@ public class PostController {
     public ResponseEntity<List<Post>> findPostsByUserId(HttpSession session, Model model,
                                                         @ModelAttribute PostFilter postFilter)
             throws NotFoundException, InternalServerException {
-        List<Post> postList;
-        try {
-            User userLoggedIn = (User) session.getAttribute("user");
-            userService.isUserLoggedIn(session, userLoggedIn.getId());
-            postFilter.setLoggedInUser(userLoggedIn.getId());
-            postList = postService.findPostsByUserId(postFilter);
-            model.addAttribute("postList", postList);
-        } catch (BadRequestException e) {
-            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (NotFoundException e) {
-            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (InternalServerException e) {
-            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+
+        User userLoggedIn = (User) session.getAttribute("user");
+        userService.isUserLoggedIn(session, userLoggedIn.getId());
+        postFilter.setLoggedInUser(userLoggedIn.getId());
+        List<Post> postList = postService.findPostsByUserId(postFilter);
+        model.addAttribute("postList", postList);
         return new ResponseEntity<>(postList, HttpStatus.OK);
     }
 
@@ -86,33 +61,22 @@ public class PostController {
     @RequestMapping(method = RequestMethod.POST, value = "/feed", produces = "text/plain")
     public ResponseEntity<List<Post>> feedNews(HttpSession session, Model model)
             throws NotFoundException, InternalServerException {
-        List<Post> postList;
-        try {
-            User userLoggedIn = (User) session.getAttribute("user");
-            Integer newsIndexFrom = (Integer) session.getAttribute("news");
-            userService.isUserLoggedIn(session, userLoggedIn.getId());
 
-            PostFilter postFilter = new PostFilter();
-            postFilter.setLoggedInUser(userLoggedIn.getId());
-            postFilter.setFriends("true");
-            postFilter.setNewsIndexFrom(newsIndexFrom);
+        User userLoggedIn = (User) session.getAttribute("user");
+        Integer newsIndexFrom = (Integer) session.getAttribute("news");
+        userService.isUserLoggedIn(session, userLoggedIn.getId());
 
-            postList = postService.getPostsAsNews(postFilter);
-            model.addAttribute("postList", postList);
+        PostFilter postFilter = new PostFilter();
+        postFilter.setLoggedInUser(userLoggedIn.getId());
+        postFilter.setFriends("true");
+        postFilter.setNewsIndexFrom(newsIndexFrom);
 
-            newsIndexFrom += maxPostsAsNews;
-            session.setAttribute("news", newsIndexFrom);
+        List<Post> postList = postService.getPostsAsNews(postFilter);
+        model.addAttribute("postList", postList);
 
-        } catch (BadRequestException e) {
-            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
-            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-        } catch (NotFoundException e) {
-            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        } catch (InternalServerException e) {
-            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        newsIndexFrom += maxPostsAsNews;
+        session.setAttribute("news", newsIndexFrom);
+
         return new ResponseEntity<>(postList, HttpStatus.OK);
     }
 

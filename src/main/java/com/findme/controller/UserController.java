@@ -1,7 +1,6 @@
 package com.findme.controller;
 
 import com.findme.exception.BadRequestException;
-import com.findme.exception.InternalServerException;
 import com.findme.exception.NotFoundException;
 import com.findme.models.Relationship;
 import com.findme.models.User;
@@ -17,7 +16,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
-import java.util.Arrays;
 
 @Controller
 public class UserController {
@@ -34,21 +32,9 @@ public class UserController {
     @RequestMapping(method = RequestMethod.POST, value = "/login")
    public ResponseEntity loginUser(HttpSession session, @RequestParam String emailAddress,
                                    @RequestParam String password) {
-       User foundUser;
-        try {
-            foundUser = userService.userLogin(emailAddress, password);
-            session.setAttribute("user", foundUser);
-            session.setAttribute("news", 0);
-        } catch (BadRequestException  e) {
-            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (NotFoundException e) {
-            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (InternalServerException e) {
-            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
-            return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        User foundUser = userService.userLogin(emailAddress, password);
+        session.setAttribute("user", foundUser);
+        session.setAttribute("news", 0);
         logger.info("User id " + foundUser.getId() + " was logged in");
         return new ResponseEntity<>(HttpStatus.OK);
    }
@@ -57,12 +43,12 @@ public class UserController {
     @RequestMapping(method = RequestMethod.GET, value = "/logout")
     public ResponseEntity logoutUser(HttpSession session) {
         User user;
-        if (session != null && !session.isNew()) {
+        if (session != null && !session.isNew() && session.getAttribute("user") != null) {
             user = (User) session.getAttribute("user");
             session.removeAttribute("user");
             session.removeAttribute("news");
         } else {
-            return new ResponseEntity<>("You were not logged in.", HttpStatus.BAD_REQUEST);
+            throw new BadRequestException("You were not logged in.");
         }
         logger.info("User id " + user.getId() + " was logged out");
         return new ResponseEntity<>("Hope see you soon.", HttpStatus.OK);
@@ -71,24 +57,11 @@ public class UserController {
 
    @RequestMapping(method = RequestMethod.POST, value = "/user-registration")
    public ResponseEntity registerUser(@ModelAttribute User user) {
-        try {
-            userService.save(user);
-        } catch (BadRequestException  e) {
-            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
-            return new ResponseEntity<>("User " + user.getFirstName() + " was not registered. " +
-                    e.getMessage(), HttpStatus.BAD_REQUEST);
-        } catch (NotFoundException e) {
-            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
-            return new ResponseEntity<>("User " + user.getFirstName() + " was not registered. " +
-                    e.getMessage(), HttpStatus.NOT_FOUND);
-        } catch (InternalServerException e) {
-            logger.error(Arrays.toString(e.getStackTrace()) + "\n" + e.getMessage());
-            return new ResponseEntity<>("User " + user.getFirstName() + " was not registered. " +
-                    e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        userService.save(user);
         logger.info("User " + user.getFirstName() + " " + user.getLastName() + " was registered.");
         return new ResponseEntity<>("User " + user.getFirstName() + " was registered.", HttpStatus.OK);
    }
+
 
     @RequestMapping(method = RequestMethod.GET, path = "/registration")
     public String home() {
@@ -101,6 +74,9 @@ public class UserController {
     public String home(HttpSession session, Model model, @PathVariable String  userId) {
         Long profileUserId = UtilString.stringToLong(userId);
         User loggedInUser = (User) session.getAttribute("user");
+        if (loggedInUser == null) {
+            throw new BadRequestException("You should be logged in first.");
+        }
         Relationship relationship = relationshipService.findByIds(loggedInUser.getId(), profileUserId);
         userService.viewProfileValidation(session, profileUserId, relationship);
         User user;
