@@ -2,6 +2,7 @@ package com.findme.exception;
 
 import org.apache.log4j.Logger;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -15,11 +16,9 @@ public class GlobalExceptionHandler {
 
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(LoginException.class)
-    public ModelAndView handlerLoginException(Exception e) {
+    public ResponseEntity handlerLoginException(Exception e) {
         logger.error("LoginException handler executed." + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
-        ModelAndView modelAndView = new ModelAndView("loginException");
-        modelAndView.addObject("exception", e.getMessage());
-        return modelAndView;
+        return new ResponseEntity<>("LoginException handler executed.", HttpStatus.BAD_REQUEST);
     }
 
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
