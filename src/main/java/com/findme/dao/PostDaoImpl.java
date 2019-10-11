@@ -121,7 +121,7 @@ public class PostDaoImpl extends GeneralDao<Post> implements PostDao {
             System.out.println(e.getMessage());
             return null;
         } catch (HttpServerErrorException.InternalServerError e) {
-            throw new InternalServerException("Something went wrong with findPostsByUserId userId = "
+            throw new InternalServerException("Something went wrong with getPostsAsNews userId = "
                     + postFilter.getLoggedInUser());
         }
 
