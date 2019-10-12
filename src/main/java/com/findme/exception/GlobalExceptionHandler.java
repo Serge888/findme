@@ -15,19 +15,10 @@ public class GlobalExceptionHandler {
     private static final Logger logger = Logger.getLogger(GlobalExceptionHandler.class);
 
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(LoginException.class)
+    @ExceptionHandler(BadRequestException.class)
     public ResponseEntity handlerLoginException(Exception e) {
         logger.error("LoginException handler executed." + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
         return new ResponseEntity<>("LoginException handler executed. " + e.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    @ResponseStatus(value = HttpStatus.BAD_REQUEST)
-    @ExceptionHandler(BadRequestException.class)
-    public ModelAndView handlerBadRequestException(Exception e) {
-        logger.error("BadRequestException handler executed." + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
-        ModelAndView modelAndView = new ModelAndView("400");
-        modelAndView.addObject("exception", e.getMessage());
-        return modelAndView;
     }
 
 

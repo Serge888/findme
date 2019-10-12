@@ -11,3 +11,8 @@ CREATE TABLE message (
 );
 
 
+alter table message
+    add date_edited timestamp with time zone;
+
+alter table message
+    add date_deleted timestamp with time zone;

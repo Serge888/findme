@@ -1,7 +1,6 @@
 package com.findme.controller;
 
 import com.findme.exception.BadRequestException;
-import com.findme.exception.LoginException;
 import com.findme.exception.NotFoundException;
 import com.findme.models.Relationship;
 import com.findme.models.User;
@@ -49,7 +48,7 @@ public class UserController {
             session.removeAttribute("user");
             session.removeAttribute("news");
         } else {
-            throw new LoginException("You were not logged in.");
+            throw new BadRequestException("You were not logged in.");
         }
         logger.info("User id " + user.getId() + " was logged out");
         return new ResponseEntity<>("Hope see you soon.", HttpStatus.OK);
@@ -76,7 +75,7 @@ public class UserController {
         Long profileUserId = UtilString.stringToLong(userId);
         User loggedInUser = (User) session.getAttribute("user");
         if (loggedInUser == null) {
-            throw new LoginException("You should be logged in first.");
+            throw new BadRequestException("You should be logged in first.");
         }
         Relationship relationship = relationshipService.findByIds(loggedInUser.getId(), profileUserId);
         userService.viewProfileValidation(session, profileUserId, relationship);

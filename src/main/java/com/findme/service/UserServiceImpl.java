@@ -2,7 +2,6 @@ package com.findme.service;
 
 import com.findme.exception.BadRequestException;
 import com.findme.exception.InternalServerException;
-import com.findme.exception.LoginException;
 import com.findme.exception.NotFoundException;
 import com.findme.models.FriendRelationshipStatus;
 import com.findme.models.Relationship;
@@ -86,21 +85,21 @@ public class UserServiceImpl implements UserService {
     @Override
     public User userLogin(String emailAddress, String password) throws NotFoundException, InternalServerException {
         if (emailAddress == null || password == null) {
-            throw new LoginException("Password and login can't be null.");
+            throw new BadRequestException("Password and login can't be null.");
         }
 
         emailAddress = emailAddress.trim();
         if (!UtilString.isEmail(emailAddress)) {
-            throw new LoginException("Login contains a mistake");
+            throw new BadRequestException("Login contains a mistake");
         }
 
         User user = userDao.findByEmailAddress(emailAddress);
         if (user == null) {
-            throw new LoginException("User with email address: " + emailAddress + " was not found.");
+            throw new BadRequestException("User with email address: " + emailAddress + " was not found.");
         }
 
         if (user.getPassword() == null || !user.getPassword().equals(password)) {
-            throw new LoginException("Incorrect password.");
+            throw new BadRequestException("Incorrect password.");
         }
         return user;
     }
@@ -109,7 +108,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void viewProfileValidation(HttpSession session, Long profileUserId, Relationship relationship) throws BadRequestException {
         if (session.getAttribute("user") == null) {
-            throw new LoginException("First you should login.");
+            throw new BadRequestException("First you should login.");
         }
         User loggedInUser = (User) session.getAttribute("user");
         if ((relationship == null && !loggedInUser.getId().equals(profileUserId))
@@ -124,7 +123,7 @@ public class UserServiceImpl implements UserService {
     public void isUserLoggedIn(HttpSession session, Long actionUserIdFrom ) throws BadRequestException {
         User userLoggedIn = (User) session.getAttribute("user");
         if (userLoggedIn == null ||  !userLoggedIn.getId().equals(actionUserIdFrom )) {
-            throw new LoginException("First you should login.");
+            throw new BadRequestException("First you should login.");
         }
     }
 
