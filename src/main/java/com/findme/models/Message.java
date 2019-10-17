@@ -3,13 +3,13 @@ package com.findme.models;
 import lombok.*;
 
 import javax.persistence.*;
-import java.util.Date;
+import java.time.LocalDate;
 
 @Entity
 @Table(name = "message")
 @Data
 @ToString
-@EqualsAndHashCode
+@EqualsAndHashCode (exclude = {"dateRead", "dateEdited", "dateDeleted"})
 @AllArgsConstructor
 @NoArgsConstructor
 public class Message {
@@ -17,14 +17,20 @@ public class Message {
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
 
-    @Column(name = "text")
+    @Column(name = "text", length = 140)
     private String text;
 
     @Column(name = "date_sent")
-    private Date dateSent;
+    private LocalDate dateSent;
 
     @Column(name = "date_read")
-    private Date dateRead;
+    private LocalDate dateRead;
+
+    @Column(name = "date_edited")
+    private LocalDate dateEdited;
+
+    @Column(name = "date_deleted")
+    private LocalDate dateDeleted;
 
 
     @ManyToOne (optional = false, fetch=FetchType.LAZY)

@@ -3,6 +3,7 @@ package com.findme.service;
 import com.findme.exception.InternalServerException;
 import com.findme.models.FriendRelationshipStatus;
 import com.findme.models.Relationship;
+import com.findme.models.User;
 
 import java.util.List;
 

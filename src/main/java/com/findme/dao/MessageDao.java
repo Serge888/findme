@@ -11,5 +11,4 @@ public interface MessageDao {
     Message delete(Message message) throws InternalServerException;
     Message findById(Long id) throws InternalServerException, NotFoundException;
 
-
 }

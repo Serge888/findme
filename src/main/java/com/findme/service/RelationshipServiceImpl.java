@@ -66,11 +66,10 @@ public class RelationshipServiceImpl implements RelationshipService {
         return relationshipDao.delete(relationship);
     }
 
+
     @Override
     public Relationship findByIdFromAndIdTo(Long userFromId, Long userToId) throws InternalServerException {
-        User userFrom = userService.findById(userFromId);
-        User userTo = userService.findById(userToId);
-        return relationshipDao.findByUserFromAndUserTo(userFrom, userTo);
+        return relationshipDao.findByUserFromAndUserTo(userFromId, userToId);
     }
 
 

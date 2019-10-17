@@ -13,7 +13,7 @@ public interface RelationshipDao {
     Relationship findById(Long id) throws InternalServerException;
     Relationship update(Relationship relationship) throws InternalServerException;
     Relationship delete(Relationship relationship) throws InternalServerException;
-    Relationship findByUserFromAndUserTo(User userFrom, User userTo) throws InternalServerException;
+    Relationship findByUserFromAndUserTo(Long userFromId, Long userToId) throws InternalServerException;
     List<Relationship> findByUserFrom(User userFrom) throws InternalServerException;
     List<Relationship> findByUserTo(User userTo) throws InternalServerException;
     Relationship findByUsers(User userFrom, User userTo) throws InternalServerException;

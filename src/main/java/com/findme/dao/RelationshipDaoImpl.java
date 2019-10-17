@@ -19,8 +19,8 @@ public class RelationshipDaoImpl extends GeneralDao<Relationship> implements Rel
 
     private String findByUserFromIdHql = "select r from Relationship r where r.userFrom = :userFromId";
     private String findByUserToIdHql = "select r from Relationship r where r.userTo = :userToId";
-    private String findByIdFromAndIdToHql = "select r from Relationship r where r.userTo = :userToId " +
-            " r.userFrom = :userFromId";
+    private String findByIdFromAndIdToHql = "select r from Relationship r where r.userTo.id = :userToId " +
+            "and r.userFrom.id = :userFromId";
     private String findByIdsHql = "select r from Relationship r where (r.userTo = :userToId and" +
             " r.userFrom = :userFromId) or (r.userTo = :userFromIdInv and r.userFrom = :userToIdInv)";
     private String findByUserIdAndStatesRelationshipHql = "select r from Relationship r " +
@@ -152,19 +152,19 @@ public class RelationshipDaoImpl extends GeneralDao<Relationship> implements Rel
 
 
     @Override
-    public Relationship findByUserFromAndUserTo(User userFrom, User userTo) throws InternalServerException {
+    public Relationship findByUserFromAndUserTo(Long userFromId, Long userToId) throws InternalServerException {
         Relationship relationship;
         try {
             relationship = entityManager.createQuery(findByIdFromAndIdToHql, Relationship.class)
-                    .setParameter("userFromId", userFrom)
-                    .setParameter("userToId", userTo)
+                    .setParameter("userFromId", userFromId)
+                    .setParameter("userToId", userToId)
                     .getSingleResult();
         } catch (NoResultException e) {
             e.getMessage();
             return null;
         } catch (HttpServerErrorException.InternalServerError e) {
             throw new InternalServerException("Something went wrong with findByUserFromAndUserTo userFromId = "
-                    + userFrom.getId() + " userToId " + userTo.getId());
+                    + userFromId + " userToId " + userToId);
         }
         return relationship;
     }

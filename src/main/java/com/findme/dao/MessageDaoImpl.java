@@ -17,11 +17,22 @@ public class MessageDaoImpl extends GeneralDao<Message> implements MessageDao {
         try {
             message = entityManager.find(Message.class, id);
         } catch (Exception e) {
-            throw new InternalServerException("Something went wrong with findById postId = " + id);
+            throw new InternalServerException("Something went wrong with findById messageId = " + id);
         }
         if (message == null) {
-            throw new NotFoundException("Post id " + id + " was not found");
+            throw new NotFoundException("Message id " + id + " was not found");
         }
         return message;
     }
+
+
+
+
+
+
+
+
+
+
+
 }

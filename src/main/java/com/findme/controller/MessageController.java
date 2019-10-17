@@ -1,53 +1,90 @@
 package com.findme.controller;
 
-import com.findme.util.UtilString;
+import com.findme.exception.BadRequestException;
+import com.findme.exception.InternalServerException;
 import com.findme.models.Message;
+import com.findme.models.User;
 import com.findme.service.MessageService;
+import com.findme.service.UserService;
+import com.findme.util.UtilString;
 import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
+import javax.servlet.http.HttpSession;
 
 @Controller
 public class MessageController {
     private static final Logger logger = Logger.getLogger(MessageController.class);
     private MessageService messageService;
+    private UserService userService;
 
     @Autowired
-    public MessageController(MessageService messageService) {
+    public MessageController(MessageService messageService, UserService userService) {
         this.messageService = messageService;
+        this.userService = userService;
     }
 
-    @RequestMapping(method = RequestMethod.POST, value = "/save-message", produces = "text/plain")
-    public @ResponseBody
-    String save(@RequestBody Message message) {
+    @PostMapping(path = "/send-message")
+    public ResponseEntity sendMessage(HttpSession session, @RequestParam String userToId, @RequestParam String text)
+            throws BadRequestException, InternalServerException {
+        User userLoggedIn = (User) session.getAttribute("user");
+        userService.isUserLoggedIn(session, userLoggedIn.getId());
+        Message message = new Message();
+        message.setText(text);
+        message.setUserFrom(userLoggedIn);
+        message.setUserTo(userService.findById(UtilString.stringToLong(userToId)));
         messageService.save(message);
-        return "Message id " + message.getId() + " was saved";
+        logger.info("Message was sent.");
+        return new ResponseEntity<>("Message was sent", HttpStatus.OK);
     }
 
-
-    @RequestMapping(method = RequestMethod.PUT, value = "/update-message", produces = "text/plain")
-    public @ResponseBody
-    String update(@RequestBody Message newMessage) {
-        Long id = newMessage.getId();
-        Message message = messageService.findById(id);
-        message.setText(newMessage.getText());
+    @RequestMapping(method = RequestMethod.PUT, value = "/edit-message")
+    public ResponseEntity editMessage(HttpSession session, @ModelAttribute Message message)
+            throws BadRequestException, InternalServerException {
+        User userLoggedIn = (User) session.getAttribute("user");
+        userService.isUserLoggedIn(session, userLoggedIn.getId());
+        message.setUserFrom(userLoggedIn);
         messageService.update(message);
-        return "Message id " + message.getId() + " was updated " + message;
+        logger.info("Message was edited.");
+        return new ResponseEntity<>("Message was edited", HttpStatus.OK);
     }
 
 
-    @RequestMapping(method = RequestMethod.DELETE, value = "/delete-message", produces = "text/plain")
-    public @ResponseBody
-    String delete(@RequestBody Message message) {
-        messageService.delete(message);
-        return "Message id " + message.getId() + " was deleted " + message;
+    @RequestMapping(method = RequestMethod.PUT, value = "/read-message")
+    public ResponseEntity readMessage(HttpSession session, @ModelAttribute Message message)
+            throws BadRequestException, InternalServerException {
+        User userLoggedIn = (User) session.getAttribute("user");
+        userService.isUserLoggedIn(session, userLoggedIn.getId());
+        message.setUserFrom(userLoggedIn);
+        messageService.updateReadDate(message);
+        logger.info("Message was read.");
+        return new ResponseEntity<>("Message was read", HttpStatus.OK);
     }
 
-    @RequestMapping(method = RequestMethod.GET, value = "/findById-message/{messageId}", produces = "text/plain")
+
+
+    @RequestMapping(method = RequestMethod.PUT, value = "/delete-message")
+    public ResponseEntity deleteMessage(HttpSession session, @ModelAttribute Message message)
+            throws BadRequestException, InternalServerException {
+        User userLoggedIn = (User) session.getAttribute("user");
+        userService.isUserLoggedIn(session, userLoggedIn.getId());
+        message.setUserFrom(userLoggedIn);
+        messageService.updateDeleteDate(message);
+        logger.info("Message was deleted.");
+        return new ResponseEntity<>("Message was deleted", HttpStatus.OK);
+    }
+
+
+
+    @GetMapping("/findById-message/{messageId}")
     public @ResponseBody
     String findById(@PathVariable String messageId) {
         Message message = messageService.findById(UtilString.stringToLong(messageId));
         return "Message " + message.getId() +" was found: " + message;
     }
+
 }

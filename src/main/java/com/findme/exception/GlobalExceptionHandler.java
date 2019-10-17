@@ -17,8 +17,8 @@ public class GlobalExceptionHandler {
     @ResponseStatus(value = HttpStatus.BAD_REQUEST)
     @ExceptionHandler(BadRequestException.class)
     public ResponseEntity handlerLoginException(Exception e) {
-        logger.error("LoginException handler executed." + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
-        return new ResponseEntity<>("LoginException handler executed. " + e.getMessage(), HttpStatus.BAD_REQUEST);
+        logger.error("BadRequestException handler executed." + e.getMessage() + " " + Arrays.toString(e.getStackTrace()));
+        return new ResponseEntity<>("BadRequestException handler executed. " + e.getMessage(), HttpStatus.BAD_REQUEST);
     }
 
 
