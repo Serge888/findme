@@ -2,6 +2,7 @@ package com.findme.controller;
 
 import com.findme.exception.BadRequestException;
 import com.findme.exception.InternalServerException;
+import com.findme.exception.NotFoundException;
 import com.findme.models.Message;
 import com.findme.models.User;
 import com.findme.service.MessageService;
@@ -12,9 +13,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpSession;
+import java.util.List;
 
 @Controller
 public class MessageController {
@@ -79,6 +82,54 @@ public class MessageController {
     }
 
 
+    @RequestMapping(method = RequestMethod.PUT, value = "/remove-selected-messages")
+    public ResponseEntity removeSelected(HttpSession session, @ModelAttribute List<Message> messageList)
+            throws BadRequestException, InternalServerException {
+        User userLoggedIn = (User) session.getAttribute("user");
+        for (Message message : messageList) {
+            message.setUserFrom(userLoggedIn);
+        }
+        messageService.updateSelectedMessages(messageList);
+        logger.info("Messages are deleted.");
+        return new ResponseEntity<> ("Messages are deleted.", HttpStatus.OK);
+    }
+
+
+    @RequestMapping(method = RequestMethod.POST, value = "/remove-chat")
+    public ResponseEntity removeAll(HttpSession session, @RequestParam String userId)
+            throws BadRequestException, InternalServerException {
+        User userLoggedIn = (User) session.getAttribute("user");
+        messageService.updateAllDateDeleted(userLoggedIn.getId(), UtilString.stringToLong(userId));
+        logger.info("Chat was removed.");
+        return new ResponseEntity<> ("Chat was deleted.", HttpStatus.OK);
+    }
+
+
+    @GetMapping(path = "/chat/{userToIdStr}")
+    public String getMessages(HttpSession session, Model model,
+                              @PathVariable String userToIdStr,
+                              @RequestParam(required = false) String curMessagesIndexFrom)
+            throws BadRequestException, InternalServerException, NotFoundException {
+        Integer messagesIndexFrom = 0;
+        List<Message> messages;
+        User userLoggedIn = (User) session.getAttribute("user");
+        Long userToId = UtilString.stringToLong(userToIdStr);
+
+        if (curMessagesIndexFrom == null) {
+            messages = messageService.findMessagesByIds(userLoggedIn.getId(),userToId, messagesIndexFrom);
+            messagesIndexFrom = 20;
+        } else {
+            messagesIndexFrom = Integer.valueOf(curMessagesIndexFrom);
+            messages = messageService.findMessagesByIds(userLoggedIn.getId(),userToId, messagesIndexFrom);
+            messagesIndexFrom += 20;
+        }
+        model.addAttribute("messages", messages);
+        model.addAttribute("messagesIndexFrom", messagesIndexFrom);
+        logger.info("Chat was opened.");
+        return "message";
+    }
+
+
 
     @GetMapping("/findById-message/{messageId}")
     public @ResponseBody
@@ -86,5 +137,6 @@ public class MessageController {
         Message message = messageService.findById(UtilString.stringToLong(messageId));
         return "Message " + message.getId() +" was found: " + message;
     }
+
 
 }

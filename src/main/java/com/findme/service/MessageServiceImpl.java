@@ -13,6 +13,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class MessageServiceImpl implements MessageService {
@@ -66,6 +68,45 @@ public class MessageServiceImpl implements MessageService {
 
 
 
+    @Override
+    public void updateSelectedMessages(List<Message> messageList) throws InternalServerException, BadRequestException {
+        if (messageList.size() > 10) {
+            throw new BadRequestException("You can update 10 messages only at a time.");
+        }
+        List<Message> foundMessages = new ArrayList<>();
+        for (Message message : messageList) {
+            Message foundMessage = findById(message.getId());
+            validationForUpdate(foundMessage, message);
+            foundMessages.add(foundMessage);
+        }
+        messageDao.updateDateDeleted(foundMessages);
+
+    }
+
+    @Override
+    public void updateAllDateDeleted(Long userFormId, Long userToId)
+            throws InternalServerException, BadRequestException {
+        messageDao.updateAllDateDeleted(userFormId, userToId);
+
+    }
+
+    @Override
+    public List<Message> findMessagesByIds(Long userFromId, Long userToId, Integer messageIndexFrom)
+            throws InternalServerException, NotFoundException {
+        List<Long> messageIdsToReadUpdate = new ArrayList<>();
+        List<Message> messageList = messageDao.getAllMessages(userFromId, userToId, messageIndexFrom);
+        for (Message message : messageList) {
+            if (message.getDateRead() == null && message.getUserTo().getId().equals(userFromId)) {
+                message.setDateRead(LocalDate.now());
+                messageIdsToReadUpdate.add(message.getId());
+            }
+        }
+        if (messageIdsToReadUpdate.size() > 0)
+            messageDao.updateDateRead(messageIdsToReadUpdate);
+        return messageList;
+    }
+
+
     private void validationForSave(Relationship relationship, @NonNull Message message) throws BadRequestException {
         if (relationship == null) {
             throw new BadRequestException("You can't send message to user id " + message.getUserTo().getId());
@@ -98,6 +139,7 @@ public class MessageServiceImpl implements MessageService {
             throw new BadRequestException("UserFrom or userTo doesn't match.");
         }
     }
+
 
 
 }
