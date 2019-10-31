@@ -29,15 +29,26 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public Message save(Message message)  throws InternalServerException, BadRequestException {
+        if (message.getText().length() > 140)  {
+            throw new BadRequestException("Message can't be more then 140 characters.");
+        }
         Relationship relationship =
                 relationshipService.findByIdFromAndIdTo(message.getUserFrom().getId(), message.getUserTo().getId());
-        validationForSave(relationship, message);
+        if (relationship == null) {
+            throw new BadRequestException("You can't send message to user id " + message.getUserTo().getId());
+        }
+        if (!relationship.getFriendRelationshipStatus().equals(FriendRelationshipStatus.ACCEPTED)) {
+            throw new BadRequestException("You can send messages to your friends only");
+        }
         message.setDateSent(LocalDate.now());
         return messageDao.save(message);
     }
 
     @Override
     public Message update(Message message) throws InternalServerException, BadRequestException {
+        if (message.getText().length() > 140)  {
+            throw new BadRequestException("Message can't be more then 140 characters.");
+        }
         Message foundMessage = findById(message.getId());
         foundMessage.setText(message.getText());
         foundMessage.setDateEdited(LocalDate.now());
@@ -47,6 +58,10 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public Message updateReadDate(Message message) throws InternalServerException, BadRequestException {
+        if (message.getText().length() > 140)  {
+            throw new BadRequestException("Message can't be more then 140 characters.");
+        }
+
         Message foundMessage = findById(message.getId());
         validationForUpdate(foundMessage, message);
         foundMessage.setDateRead(LocalDate.now());
@@ -55,6 +70,10 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public Message updateDeleteDate(Message message) throws InternalServerException, BadRequestException {
+        if (message.getText().length() > 140)  {
+            throw new BadRequestException("Message can't be more then 140 characters.");
+        }
+
         Message foundMessage = findById(message.getId());
         foundMessage.setDateDeleted(LocalDate.now());
         validationForUpdate(foundMessage, message);
@@ -79,7 +98,7 @@ public class MessageServiceImpl implements MessageService {
             validationForUpdate(foundMessage, message);
             foundMessages.add(foundMessage);
         }
-        messageDao.updateDateDeleted(foundMessages);
+        messageDao.updateSelectedMessages(foundMessages);
 
     }
 
@@ -107,26 +126,10 @@ public class MessageServiceImpl implements MessageService {
     }
 
 
-    private void validationForSave(Relationship relationship, @NonNull Message message) throws BadRequestException {
-        if (relationship == null) {
-            throw new BadRequestException("You can't send message to user id " + message.getUserTo().getId());
-        }
-        if (!relationship.getFriendRelationshipStatus().equals(FriendRelationshipStatus.ACCEPTED)) {
-            throw new BadRequestException("You can send messages to your friends only");
-        }
-        messageLengthValidation(message);
-    }
-
-    private void messageLengthValidation(@NonNull Message message) throws BadRequestException {
-        if (message.getText().length() > 140)  {
-            throw new BadRequestException("Message can't be more then 140 characters.");
-        }
-    }
 
 
 
     private void validationForUpdate(@NonNull Message foundMessage, @NonNull Message receivedMessage) throws BadRequestException {
-        messageLengthValidation(foundMessage);
         if (foundMessage.getDateRead() != null) {
             throw new BadRequestException("Message has already been read. You can't edit or delete this message any more.");
         }

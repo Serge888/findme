@@ -95,7 +95,7 @@ public class MessageController {
     }
 
 
-    @RequestMapping(method = RequestMethod.POST, value = "/remove-chat")
+    @RequestMapping(method = RequestMethod.PUT, value = "/remove-chat")
     public ResponseEntity removeAll(HttpSession session, @RequestParam String userId)
             throws BadRequestException, InternalServerException {
         User userLoggedIn = (User) session.getAttribute("user");

@@ -15,7 +15,7 @@ public interface MessageDao {
     List<Message> getAllMessages(Long userFromId, Long userToId, Integer messageIndexFrom)
             throws InternalServerException, NotFoundException;
     void updateDateRead(List<Long> messageIdList) throws InternalServerException, NotFoundException;
-    void updateDateDeleted(List<Message> messageList) throws InternalServerException, NotFoundException;
+    void updateSelectedMessages(List<Message> messageList) throws InternalServerException, NotFoundException;
     void updateAllDateDeleted(Long userFromId, Long userToId) throws InternalServerException, NotFoundException;
 
 }

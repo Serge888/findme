@@ -61,7 +61,7 @@ public class MessageDaoImpl extends GeneralDao<Message> implements MessageDao {
     }
 
     @Override
-    public void updateDateDeleted(List<Message> messageList) throws InternalServerException {
+    public void updateSelectedMessages(List<Message> messageList) throws InternalServerException {
         try {
             entityManager.createQuery(updateDateDeletedHql)
                     .setParameter("deleteDate", LocalDate.now())
@@ -70,7 +70,7 @@ public class MessageDaoImpl extends GeneralDao<Message> implements MessageDao {
         } catch (NoResultException e) {
             System.out.println(e.getMessage());
         } catch (HttpServerErrorException.InternalServerError e) {
-            throw new InternalServerException("Something went wrong with updateDateDeleted.");
+            throw new InternalServerException("Something went wrong with updateSelectedMessages.");
         }
     }
 
