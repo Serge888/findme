@@ -29,7 +29,7 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public Message save(Message message)  throws InternalServerException, BadRequestException {
-        if (message.getText().length() > 140)  {
+        if (message.getText() != null && message.getText().length() > 140)  {
             throw new BadRequestException("Message can't be more then 140 characters.");
         }
         Relationship relationship =
@@ -46,7 +46,7 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public Message update(Message message) throws InternalServerException, BadRequestException {
-        if (message.getText().length() > 140)  {
+        if (message.getText() != null && message.getText().length() > 140)  {
             throw new BadRequestException("Message can't be more then 140 characters.");
         }
         Message foundMessage = findById(message.getId());
@@ -58,10 +58,6 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public Message updateReadDate(Message message) throws InternalServerException, BadRequestException {
-        if (message.getText().length() > 140)  {
-            throw new BadRequestException("Message can't be more then 140 characters.");
-        }
-
         Message foundMessage = findById(message.getId());
         validationForUpdate(foundMessage, message);
         foundMessage.setDateRead(LocalDate.now());
@@ -70,7 +66,7 @@ public class MessageServiceImpl implements MessageService {
 
     @Override
     public Message updateDeleteDate(Message message) throws InternalServerException, BadRequestException {
-        if (message.getText().length() > 140)  {
+        if (message.getText() != null && message.getText().length() > 140)  {
             throw new BadRequestException("Message can't be more then 140 characters.");
         }
 
